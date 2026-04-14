@@ -18,12 +18,13 @@ This directory is the canonical product context for Gym Buddy v1. Start with the
 - `whatsapp-conversational-ux.md` defines the end-to-end session model for the WhatsApp experience.
 - `architecture.md` defines the minimum viable system design for running guided sessions within v1 constraints.
 - `tooling.md` defines the implementation stack and operational tooling baseline for the v1 pilot.
+- `testing-strategy.md` now defines the v1 quality baseline, including testing layers, negative tests, manual validation scripts, and pilot gates.
 - `architecture.md` and `tooling.md` now explicitly separate `Supabase Postgres` persistent operational storage from `Redis` ephemeral session state.
 - `glossary.md` protects the domain language that future agents should reuse.
 
 ## Reserved Scaffolds
 - [Development Workflow](./development-workflow.md) - Reserved for engineering workflow details
-- [Testing Strategy](./testing-strategy.md) - Reserved for implementation-phase test guidance
+- [Testing Strategy](./testing-strategy.md) - Active testing and quality baseline for v1
 - [Data Flow & Integrations](./data-flow.md) - Reserved for future system and integration detail
 - [Security & Compliance Notes](./security.md) - Reserved for future risk and compliance detail
 - [Tooling & Productivity Guide](./tooling.md) - Active stack baseline for implementation planning
@@ -37,8 +38,8 @@ This directory is the canonical product context for Gym Buddy v1. Start with the
 | WhatsApp Conversational UX | `whatsapp-conversational-ux.md` | Session-level UX specification | Project overview, operational PRD |
 | Architecture Notes | `architecture.md` | Minimum viable system design | Project overview, operational PRD, UX spec |
 | Tooling & Productivity Guide | `tooling.md` | Minimum viable implementation stack | Project brief, PRD, UX spec, architecture |
+| Testing Strategy | `testing-strategy.md` | Validation and quality baseline | PRD, UX spec, architecture, tooling, implementation plan |
 | Glossary | `glossary.md` | Domain language and guardrails | Project brief, PRD |
 | Development Workflow | `development-workflow.md` | Future engineering workflow reference | Repository process decisions |
-| Testing Strategy | `testing-strategy.md` | Future validation reference | Implementation decisions |
 | Data Flow & Integrations | `data-flow.md` | Future technical flow reference | Architecture decisions |
 | Security & Compliance Notes | `security.md` | Future security reference | Architecture and policy decisions |
