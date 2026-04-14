@@ -7,6 +7,7 @@ This directory is the canonical product context for Gym Buddy v1. Start with the
 - [Project Overview](./project-overview.md) - Consolidated agent-facing source of truth for v1
 - [Product Requirements v1](./product-requirements-v1.md) - Operational PRD distilled for future execution
 - [WhatsApp Conversational UX](./whatsapp-conversational-ux.md) - Conversational UX specification for guided workout sessions
+- [Architecture Notes](./architecture.md) - Minimum viable system architecture for the v1 guided session product
 - [Glossary](./glossary.md) - Stable domain vocabulary and boundary terms
 
 ## Current Status
@@ -14,10 +15,10 @@ This directory is the canonical product context for Gym Buddy v1. Start with the
 - `project-overview.md` normalizes the v1 scope and key product logic across the brief and PRD.
 - `product-requirements-v1.md` captures the actionable PRD details, open questions, and deferred items.
 - `whatsapp-conversational-ux.md` defines the end-to-end session model for the WhatsApp experience.
+- `architecture.md` defines the minimum viable system design for running guided sessions within v1 constraints.
 - `glossary.md` protects the domain language that future agents should reuse.
 
 ## Reserved Scaffolds
-- [Architecture Notes](./architecture.md) - Reserved for future architecture work derived from the product docs
 - [Development Workflow](./development-workflow.md) - Reserved for engineering workflow details
 - [Testing Strategy](./testing-strategy.md) - Reserved for implementation-phase test guidance
 - [Data Flow & Integrations](./data-flow.md) - Reserved for future system and integration detail
@@ -31,8 +32,8 @@ This directory is the canonical product context for Gym Buddy v1. Start with the
 | Project Overview | `project-overview.md` | Consolidated v1 truth | Project brief, PRD |
 | Product Requirements v1 | `product-requirements-v1.md` | Operational product reference | PRD, project brief |
 | WhatsApp Conversational UX | `whatsapp-conversational-ux.md` | Session-level UX specification | Project overview, operational PRD |
+| Architecture Notes | `architecture.md` | Minimum viable system design | Project overview, operational PRD, UX spec |
 | Glossary | `glossary.md` | Domain language and guardrails | Project brief, PRD |
-| Architecture Notes | `architecture.md` | Future architecture reference | Derived later from product docs |
 | Development Workflow | `development-workflow.md` | Future engineering workflow reference | Repository process decisions |
 | Testing Strategy | `testing-strategy.md` | Future validation reference | Implementation decisions |
 | Data Flow & Integrations | `data-flow.md` | Future technical flow reference | Architecture decisions |
