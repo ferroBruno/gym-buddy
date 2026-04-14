@@ -6,12 +6,14 @@ This directory is the canonical product context for Gym Buddy v1. Start with the
 - [Project Brief](./project-brief.md) - Foundational strategic briefing artifact
 - [Project Overview](./project-overview.md) - Consolidated agent-facing source of truth for v1
 - [Product Requirements v1](./product-requirements-v1.md) - Operational PRD distilled for future execution
+- [WhatsApp Conversational UX](./whatsapp-conversational-ux.md) - Conversational UX specification for guided workout sessions
 - [Glossary](./glossary.md) - Stable domain vocabulary and boundary terms
 
 ## Current Status
 - `project-brief.md` is the strategic base document and must be preserved.
 - `project-overview.md` normalizes the v1 scope and key product logic across the brief and PRD.
 - `product-requirements-v1.md` captures the actionable PRD details, open questions, and deferred items.
+- `whatsapp-conversational-ux.md` defines the end-to-end session model for the WhatsApp experience.
 - `glossary.md` protects the domain language that future agents should reuse.
 
 ## Reserved Scaffolds
@@ -28,6 +30,7 @@ This directory is the canonical product context for Gym Buddy v1. Start with the
 | Project Brief | `project-brief.md` | Strategic framing | Stakeholder framing, product intent |
 | Project Overview | `project-overview.md` | Consolidated v1 truth | Project brief, PRD |
 | Product Requirements v1 | `product-requirements-v1.md` | Operational product reference | PRD, project brief |
+| WhatsApp Conversational UX | `whatsapp-conversational-ux.md` | Session-level UX specification | Project overview, operational PRD |
 | Glossary | `glossary.md` | Domain language and guardrails | Project brief, PRD |
 | Architecture Notes | `architecture.md` | Future architecture reference | Derived later from product docs |
 | Development Workflow | `development-workflow.md` | Future engineering workflow reference | Repository process decisions |
