@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "generatedAt": "2026-04-14T16:48:59.716Z",
+  "source": "bootstrap",
+  "stack": {
+    "primaryLanguage": null,
+    "languages": [],
+    "frameworks": [],
+    "buildTools": [],
+    "testFrameworks": [],
+    "packageManager": null
+  },
+  "sensors": []
+}
