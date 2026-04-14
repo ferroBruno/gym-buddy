@@ -1,28 +1,37 @@
 # Documentation Index
 
-Welcome to the repository knowledge base. Start with the project overview, then dive into specific guides as needed.
+This directory is the canonical product context for Gym Buddy v1. Start with the brief, then use the overview and the operational PRD before planning UX, architecture, or implementation work.
 
-## Core Guides
-- [Project Overview](./project-overview.md)
-- [Architecture Notes](./architecture.md)
-- [Development Workflow](./development-workflow.md)
-- [Testing Strategy](./testing-strategy.md)
-- [Glossary & Domain Concepts](./glossary.md)
-- [Data Flow & Integrations](./data-flow.md)
-- [Security & Compliance Notes](./security.md)
-- [Tooling & Productivity Guide](./tooling.md)
+## Product Sources Of Truth
+- [Project Brief](./project-brief.md) - Foundational strategic briefing artifact
+- [Project Overview](./project-overview.md) - Consolidated agent-facing source of truth for v1
+- [Product Requirements v1](./product-requirements-v1.md) - Operational PRD distilled for future execution
+- [Glossary](./glossary.md) - Stable domain vocabulary and boundary terms
 
-## Repository Snapshot
-*Top-level directories will appear here once the repository contains subfolders.*
+## Current Status
+- `project-brief.md` is the strategic base document and must be preserved.
+- `project-overview.md` normalizes the v1 scope and key product logic across the brief and PRD.
+- `product-requirements-v1.md` captures the actionable PRD details, open questions, and deferred items.
+- `glossary.md` protects the domain language that future agents should reuse.
+
+## Reserved Scaffolds
+- [Architecture Notes](./architecture.md) - Reserved for future architecture work derived from the product docs
+- [Development Workflow](./development-workflow.md) - Reserved for engineering workflow details
+- [Testing Strategy](./testing-strategy.md) - Reserved for implementation-phase test guidance
+- [Data Flow & Integrations](./data-flow.md) - Reserved for future system and integration detail
+- [Security & Compliance Notes](./security.md) - Reserved for future risk and compliance detail
+- [Tooling & Productivity Guide](./tooling.md) - Reserved for repo tooling conventions
 
 ## Document Map
-| Guide | File | Primary Inputs |
-| --- | --- | --- |
-| Project Overview | `project-overview.md` | Roadmap, README, stakeholder notes |
-| Architecture Notes | `architecture.md` | ADRs, service boundaries, dependency graphs |
-| Development Workflow | `development-workflow.md` | Branching rules, CI config, contributing guide |
-| Testing Strategy | `testing-strategy.md` | Test configs, CI gates, known flaky suites |
-| Glossary & Domain Concepts | `glossary.md` | Business terminology, user personas, domain rules |
-| Data Flow & Integrations | `data-flow.md` | System diagrams, integration specs, queue topics |
-| Security & Compliance Notes | `security.md` | Auth model, secrets management, compliance requirements |
-| Tooling & Productivity Guide | `tooling.md` | CLI scripts, IDE configs, automation workflows |
+| Guide | File | Role | Primary Inputs |
+| --- | --- | --- | --- |
+| Project Brief | `project-brief.md` | Strategic framing | Stakeholder framing, product intent |
+| Project Overview | `project-overview.md` | Consolidated v1 truth | Project brief, PRD |
+| Product Requirements v1 | `product-requirements-v1.md` | Operational product reference | PRD, project brief |
+| Glossary | `glossary.md` | Domain language and guardrails | Project brief, PRD |
+| Architecture Notes | `architecture.md` | Future architecture reference | Derived later from product docs |
+| Development Workflow | `development-workflow.md` | Future engineering workflow reference | Repository process decisions |
+| Testing Strategy | `testing-strategy.md` | Future validation reference | Implementation decisions |
+| Data Flow & Integrations | `data-flow.md` | Future technical flow reference | Architecture decisions |
+| Security & Compliance Notes | `security.md` | Future security reference | Architecture and policy decisions |
+| Tooling & Productivity Guide | `tooling.md` | Future tooling reference | Repository conventions |
