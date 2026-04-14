@@ -1,15 +1,18 @@
 # Gym Buddy v1
 
-Initial backend execution slice for Gym Buddy v1.
+Lightweight session onboarding slice for Gym Buddy v1.
 
 ## Scope in this slice
 
 - boot a local Fastify backend
 - expose `GET /health`
 - expose `POST /session/start`
+- expose `POST /session/message`
 - establish a current-session-only foundation
 - return the Gym Buddy opening message with free-scope boundaries
-- start the guided session with a first follow-up prompt
+- collect the current session goal and available time
+- generate the first guided workout step
+- support one minimal continuation step based only on current-session context
 
 ## Install
 
@@ -48,8 +51,29 @@ curl -X POST http://localhost:3000/session/start ^
   -d "{\"channelUserId\":\"whatsapp:+5511999999999\"}"
 ```
 
+Continue the session:
+
+```bash
+curl -X POST http://localhost:3000/session/message ^
+  -H "content-type: application/json" ^
+  -d "{\"sessionId\":\"<session-id>\",\"message\":\"quick full-body session\"}"
+```
+
+```bash
+curl -X POST http://localhost:3000/session/message ^
+  -H "content-type: application/json" ^
+  -d "{\"sessionId\":\"<session-id>\",\"message\":\"12 minutes\"}"
+```
+
+```bash
+curl -X POST http://localhost:3000/session/message ^
+  -H "content-type: application/json" ^
+  -d "{\"sessionId\":\"<session-id>\",\"message\":\"done\"}"
+```
+
 ## Notes
 
 - `SESSION_STORE_MODE=memory` is the default for this slice so it can run locally without infrastructure.
+- The session keeps only lightweight context for the active workout: broad goal and available time.
 - Redis config is already wired for the active-session boundary, but the Redis-backed path is not yet covered by automated local tests.
 - Supabase env vars are documented now for the persistent operational boundary, but no operational persistence is implemented in this slice.

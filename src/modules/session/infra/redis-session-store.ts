@@ -34,6 +34,10 @@ export class RedisSessionStore implements SessionStore {
     return payload ? (JSON.parse(payload) as Session) : null;
   }
 
+  async update(session: Session): Promise<void> {
+    await this.create(session);
+  }
+
   async close(): Promise<void> {
     if (this.client.isOpen) {
       await this.client.quit();

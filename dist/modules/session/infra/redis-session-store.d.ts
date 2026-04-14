@@ -7,6 +7,7 @@ export declare class RedisSessionStore implements SessionStore {
     connect(): Promise<void>;
     create(session: Session): Promise<void>;
     get(sessionId: string): Promise<Session | null>;
+    update(session: Session): Promise<void>;
     close(): Promise<void>;
     private buildKey;
 }

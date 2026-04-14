@@ -12,6 +12,10 @@ export class MemorySessionStore implements SessionStore {
     return this.sessions.get(sessionId) ?? null;
   }
 
+  async update(session: Session): Promise<void> {
+    this.sessions.set(session.id, session);
+  }
+
   async close(): Promise<void> {
     this.sessions.clear();
   }

@@ -27,6 +27,9 @@ class RedisSessionStore {
         const payload = await this.client.get(this.buildKey(sessionId));
         return payload ? JSON.parse(payload) : null;
     }
+    async update(session) {
+        await this.create(session);
+    }
     async close() {
         if (this.client.isOpen) {
             await this.client.quit();

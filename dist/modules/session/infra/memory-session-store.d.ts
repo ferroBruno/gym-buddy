@@ -4,5 +4,6 @@ export declare class MemorySessionStore implements SessionStore {
     private readonly sessions;
     create(session: Session): Promise<void>;
     get(sessionId: string): Promise<Session | null>;
+    update(session: Session): Promise<void>;
     close(): Promise<void>;
 }

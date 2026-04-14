@@ -9,6 +9,9 @@ class MemorySessionStore {
     async get(sessionId) {
         return this.sessions.get(sessionId) ?? null;
     }
+    async update(session) {
+        this.sessions.set(session.id, session);
+    }
     async close() {
         this.sessions.clear();
     }
