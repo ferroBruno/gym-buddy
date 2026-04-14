@@ -89,6 +89,16 @@ Responsabilidade:
 - capturar inicio e fim de sessao
 - registrar duvidas recorrentes, friccao e sinais de valor percebido
 
+#### Banco operacional persistente
+
+Responsabilidade:
+
+- persistir dados operacionais da v1 em `Supabase Postgres`
+- armazenar registros tecnicos e operacionais necessarios para piloto, observabilidade leve e aprendizado
+- servir como camada persistente de dados do produto sem virar memoria funcional entre sessoes
+
+Na v1, `Supabase Postgres` e a base persistente oficial.
+
 ### 3.2 Fluxo de alto nivel
 
 1. Usuario envia mensagem no WhatsApp.
@@ -98,7 +108,8 @@ Responsabilidade:
 5. A camada de conhecimento fornece regras e conteudo relevantes.
 6. O gerador conversacional produz a proxima resposta.
 7. A resposta volta pelo gateway ao WhatsApp.
-8. Eventos leves da sessao podem ser registrados para aprendizado do piloto.
+8. O estado ativo da sessao permanece em `Redis` com TTL curto.
+9. Eventos leves da sessao e registros operacionais podem ser persistidos em `Supabase Postgres` para aprendizado do piloto.
 
 ## 4. Arquitetura da sessao
 
@@ -179,7 +190,7 @@ No encerramento, o sistema deve:
 - emitir a mensagem final de fechamento
 - liberar ou expirar o estado temporario da sessao
 
-O encerramento nao deve alimentar perfil historico do usuario.
+O encerramento nao deve alimentar perfil historico do usuario. Registros operacionais persistidos podem existir em `Supabase Postgres`, mas nao podem ser reutilizados como memoria funcional da experiencia.
 
 ### 4.8 Nova sessao sem continuidade historica
 
@@ -193,7 +204,7 @@ Quando o usuario voltar em outro momento:
 
 ### 5.1 Estado temporario
 
-O contexto da sessao deve viver em armazenamento temporario ou em uma estrutura de sessao com TTL curta, suficiente para suportar a conversa em andamento.
+O contexto da sessao ativa deve viver em `Redis` ou equivalente compativel com TTL curto, suficiente para suportar a conversa em andamento.
 
 Objetivo:
 
@@ -201,13 +212,43 @@ Objetivo:
 - permitir retomada de curto prazo em caso de atraso natural do chat
 - evitar virar historico de produto entre dias ou sessoes
 
-### 5.2 O que pode existir tecnicamente sem virar memoria de produto
+### 5.2 Armazenamento persistente operacional
 
-A arquitetura pode manter identificadores tecnicos minimos de canal e registros operacionais do piloto, desde que:
+`Supabase Postgres` e a camada persistente oficial da v1 para:
+
+- registros operacionais de sessoes
+- eventos de observabilidade do piloto
+- catalogos e metadados tecnicos necessarios para operacao
+- artefatos de apoio ao aprendizado do produto
+
+`Supabase Postgres` nao deve armazenar nem expor:
+
+- memoria funcional reutilizada na proxima sessao
+- perfil evolutivo do usuario
+- personalizacao longitudinal
+- continuidade automatica entre treinos
+
+### 5.3 O que pode existir tecnicamente sem virar memoria de produto
+
+A arquitetura pode manter identificadores tecnicos minimos de canal e registros operacionais do piloto em `Supabase Postgres`, desde que:
 
 - nao sejam usados para personalizar sessoes futuras
 - nao sejam usados para reconstruir evolucao do usuario
 - nao sejam tratados como memoria funcional da experiencia
+
+### 5.4 Distincao obrigatoria entre camadas de estado
+
+`Redis`:
+
+- serve apenas para estado ativo e efemero da sessao em andamento
+- deve expirar com TTL curto
+- nao e fonte de historico do produto
+
+`Supabase Postgres`:
+
+- serve apenas para persistencia operacional e tecnica
+- pode registrar que uma sessao aconteceu, como terminou e quais friccoes ocorreram
+- nao pode ser consultado para dar ao usuario continuidade personalizada no free
 
 ## 6. Arquitetura de conhecimento
 
@@ -269,12 +310,15 @@ O modelo operacional da v1 deve registrar apenas o suficiente para aprender com 
 - sinais de friccao
 - sinais de valor percebido
 
+Esses registros persistentes devem ser armazenados em `Supabase Postgres`.
+
 ### 7.2 Forma operacional recomendada
 
 Priorizar solucao simples, por exemplo:
 
 - logs estruturados leves
-- planilha, tabela simples ou armazenamento operacional basico para sumarizacao do piloto
+- `Supabase Postgres` como armazenamento operacional basico para sumarizacao do piloto
+- planilha ou visao manual apenas como complemento de leitura, nao como sistema central
 - revisoes periodicas humanas dos principais eventos e exemplos
 
 ### 7.3 O que nao precisa nesta fase
@@ -300,6 +344,7 @@ Priorizar solucao simples, por exemplo:
 ### 8.2 Restricoes de desenho
 
 - qualquer persistencia deve ser justificada como operacional ou tecnica, nunca como memoria funcional do produto
+- `Supabase Postgres` nao pode ser promovido a base de memoria de produto no free
 - qualquer componente novo deve provar que reduz risco real da v1
 - a arquitetura deve ser legivel para agentes futuros e facil de implementar incrementalmente
 
@@ -310,6 +355,7 @@ Priorizar solucao simples, por exemplo:
 - perda de coerencia se o estado temporario da sessao for insuficiente
 - deriva do modelo para respostas excessivamente genericas ou fora de escopo
 - risco de usar registros operacionais como memoria de produto por acidente
+- risco de confundir dados persistidos em `Supabase Postgres` com estado reutilizavel da experiencia
 - complexidade desnecessaria se a base curada nao for organizada de forma enxuta
 
 ### 9.2 Decisoes adiadas
@@ -319,19 +365,25 @@ Priorizar solucao simples, por exemplo:
 - escolha final do provedor e do stack de inferencia
 - nivel de automacao do registro operacional do piloto
 
-### 9.3 Caminhos futuros provaveis
+### 9.3 Decisao agora fixada
+
+- `Supabase Postgres` e a base persistente oficial da v1
+- `Redis` permanece exclusivo para estado ativo e efemero de sessao
+
+### 9.4 Caminhos futuros provaveis
 
 - evoluir a maquina de sessao para fluxos mais robustos
 - melhorar recuperacao de conhecimento curado
 - sofisticar observabilidade do piloto
 - avaliar memoria e personalizacao apenas em fases futuras, se o produto justificar
 
-### 9.4 Fronteiras que devem permanecer protegidas na v1
+### 9.5 Fronteiras que devem permanecer protegidas na v1
 
 - nenhuma memoria funcional entre sessoes
 - nenhuma logica de evolucao historica
 - nenhuma arquitetura de premium
 - nenhuma personalizacao longitudinal mascarada de conveniencia tecnica
+- nenhum uso de `Supabase Postgres` para reconstruir continuidade personalizada no free
 
 ## 10. Relacao com os proximos trabalhos
 

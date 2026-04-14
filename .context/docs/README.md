@@ -8,6 +8,7 @@ This directory is the canonical product context for Gym Buddy v1. Start with the
 - [Product Requirements v1](./product-requirements-v1.md) - Operational PRD distilled for future execution
 - [WhatsApp Conversational UX](./whatsapp-conversational-ux.md) - Conversational UX specification for guided workout sessions
 - [Architecture Notes](./architecture.md) - Minimum viable system architecture for the v1 guided session product
+- [Tooling & Productivity Guide](./tooling.md) - Minimum viable implementation stack and tooling decisions for v1
 - [Glossary](./glossary.md) - Stable domain vocabulary and boundary terms
 
 ## Current Status
@@ -16,6 +17,8 @@ This directory is the canonical product context for Gym Buddy v1. Start with the
 - `product-requirements-v1.md` captures the actionable PRD details, open questions, and deferred items.
 - `whatsapp-conversational-ux.md` defines the end-to-end session model for the WhatsApp experience.
 - `architecture.md` defines the minimum viable system design for running guided sessions within v1 constraints.
+- `tooling.md` defines the implementation stack and operational tooling baseline for the v1 pilot.
+- `architecture.md` and `tooling.md` now explicitly separate `Supabase Postgres` persistent operational storage from `Redis` ephemeral session state.
 - `glossary.md` protects the domain language that future agents should reuse.
 
 ## Reserved Scaffolds
@@ -23,7 +26,7 @@ This directory is the canonical product context for Gym Buddy v1. Start with the
 - [Testing Strategy](./testing-strategy.md) - Reserved for implementation-phase test guidance
 - [Data Flow & Integrations](./data-flow.md) - Reserved for future system and integration detail
 - [Security & Compliance Notes](./security.md) - Reserved for future risk and compliance detail
-- [Tooling & Productivity Guide](./tooling.md) - Reserved for repo tooling conventions
+- [Tooling & Productivity Guide](./tooling.md) - Active stack baseline for implementation planning
 
 ## Document Map
 | Guide | File | Role | Primary Inputs |
@@ -33,9 +36,9 @@ This directory is the canonical product context for Gym Buddy v1. Start with the
 | Product Requirements v1 | `product-requirements-v1.md` | Operational product reference | PRD, project brief |
 | WhatsApp Conversational UX | `whatsapp-conversational-ux.md` | Session-level UX specification | Project overview, operational PRD |
 | Architecture Notes | `architecture.md` | Minimum viable system design | Project overview, operational PRD, UX spec |
+| Tooling & Productivity Guide | `tooling.md` | Minimum viable implementation stack | Project brief, PRD, UX spec, architecture |
 | Glossary | `glossary.md` | Domain language and guardrails | Project brief, PRD |
 | Development Workflow | `development-workflow.md` | Future engineering workflow reference | Repository process decisions |
 | Testing Strategy | `testing-strategy.md` | Future validation reference | Implementation decisions |
 | Data Flow & Integrations | `data-flow.md` | Future technical flow reference | Architecture decisions |
 | Security & Compliance Notes | `security.md` | Future security reference | Architecture and policy decisions |
-| Tooling & Productivity Guide | `tooling.md` | Future tooling reference | Repository conventions |
