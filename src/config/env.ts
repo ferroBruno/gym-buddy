@@ -4,6 +4,12 @@ export type AppConfig = {
   nodeEnv: string;
   port: number;
   appBaseUrl: string;
+  whatsapp: {
+    verifyToken: string;
+    accessToken: string;
+    phoneNumberId: string;
+    businessAccountId?: string;
+  };
   sessionStoreMode: SessionStoreMode;
   redisUrl?: string;
   redisTtlSeconds: number;
@@ -22,6 +28,26 @@ export type AppConfig = {
 
 const DEFAULT_PORT = 3000;
 const DEFAULT_REDIS_TTL_SECONDS = 1800;
+const TEST_SECRET = "test-secret";
+
+function requiredString(
+  env: NodeJS.ProcessEnv,
+  fieldName: string,
+  options: {
+    allowTestDefault?: boolean;
+  } = {}
+): string {
+  const value = env[fieldName]?.trim();
+  if (value) {
+    return value;
+  }
+
+  if (options.allowTestDefault && env.NODE_ENV === "test") {
+    return TEST_SECRET;
+  }
+
+  throw new Error(`Missing required environment variable: ${fieldName}.`);
+}
 
 function parseNumber(value: string | undefined, fallback: number, fieldName: string): number {
   if (!value) {
@@ -53,6 +79,18 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     nodeEnv: env.NODE_ENV ?? "development",
     port: parseNumber(env.PORT, DEFAULT_PORT, "PORT"),
     appBaseUrl: env.APP_BASE_URL ?? `http://localhost:${env.PORT ?? DEFAULT_PORT}`,
+    whatsapp: {
+      verifyToken: requiredString(env, "WHATSAPP_VERIFY_TOKEN", {
+        allowTestDefault: true
+      }),
+      accessToken: requiredString(env, "WHATSAPP_ACCESS_TOKEN", {
+        allowTestDefault: true
+      }),
+      phoneNumberId: requiredString(env, "WHATSAPP_PHONE_NUMBER_ID", {
+        allowTestDefault: true
+      }),
+      businessAccountId: env.WHATSAPP_BUSINESS_ACCOUNT_ID
+    },
     sessionStoreMode: parseSessionStoreMode(env.SESSION_STORE_MODE),
     redisUrl: env.REDIS_URL,
     redisTtlSeconds: parseNumber(env.REDIS_TTL_SECONDS, DEFAULT_REDIS_TTL_SECONDS, "REDIS_TTL_SECONDS"),

@@ -10,6 +10,7 @@ const session_service_js_1 = require("./modules/session/application/session-serv
 const memory_session_store_js_1 = require("./modules/session/infra/memory-session-store.js");
 const redis_session_store_js_1 = require("./modules/session/infra/redis-session-store.js");
 const session_routes_js_1 = require("./modules/session/api/session.routes.js");
+const whatsapp_routes_js_1 = require("./routes/whatsapp.routes.js");
 async function createApp(config) {
     const app = (0, fastify_1.default)({
         logger: config.nodeEnv !== "test"
@@ -20,6 +21,9 @@ async function createApp(config) {
         await sessionStore.close();
     });
     await (0, health_routes_js_1.registerHealthRoutes)(app);
+    await (0, whatsapp_routes_js_1.registerWhatsAppRoutes)(app, {
+        verifyToken: config.whatsapp.verifyToken
+    });
     await (0, session_routes_js_1.registerSessionRoutes)(app, {
         sessionService
     });

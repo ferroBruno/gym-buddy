@@ -38,6 +38,109 @@ async function main() {
     await app.close();
   });
 
+  await run("GET /webhooks/whatsapp verifies Meta challenge", async () => {
+    const app = await createTestApp();
+    const response = await app.inject({
+      method: "GET",
+      url: "/webhooks/whatsapp?hub.mode=subscribe&hub.verify_token=test-secret&hub.challenge=challenge-value"
+    });
+
+    assert.equal(response.statusCode, 200);
+    assert.equal(response.body, "challenge-value");
+
+    await app.close();
+  });
+
+  await run("GET /webhooks/whatsapp rejects invalid verification token", async () => {
+    const app = await createTestApp();
+    const response = await app.inject({
+      method: "GET",
+      url: "/webhooks/whatsapp?hub.mode=subscribe&hub.verify_token=wrong&hub.challenge=challenge-value"
+    });
+
+    assert.equal(response.statusCode, 403);
+    assert.deepEqual(response.json(), {
+      error: "webhook verification failed"
+    });
+
+    await app.close();
+  });
+
+  await run("POST /webhooks/whatsapp normalizes text messages", async () => {
+    const app = await createTestApp();
+    const response = await app.inject({
+      method: "POST",
+      url: "/webhooks/whatsapp",
+      payload: {
+        entry: [
+          {
+            changes: [
+              {
+                value: {
+                  metadata: {
+                    phone_number_id: "phone-number-id"
+                  },
+                  messages: [
+                    {
+                      id: "wamid.1",
+                      from: "5511999999999",
+                      timestamp: "1713120000",
+                      type: "text",
+                      text: {
+                        body: "Oi"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    });
+
+    assert.equal(response.statusCode, 200);
+    assert.deepEqual(response.json(), {
+      status: "received",
+      messages: 1
+    });
+
+    await app.close();
+  });
+
+  await run("POST /webhooks/whatsapp ignores unsupported events", async () => {
+    const app = await createTestApp();
+    const response = await app.inject({
+      method: "POST",
+      url: "/webhooks/whatsapp",
+      payload: {
+        entry: [
+          {
+            changes: [
+              {
+                value: {
+                  statuses: [
+                    {
+                      id: "wamid.1",
+                      status: "sent"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    });
+
+    assert.equal(response.statusCode, 200);
+    assert.deepEqual(response.json(), {
+      status: "ignored"
+    });
+
+    await app.close();
+  });
+
   await run("POST /session/start returns the opening session payload", async () => {
     const app = await createTestApp();
     const response = await app.inject({

@@ -32,7 +32,14 @@ The server starts on `http://localhost:3000` by default.
 ## Test locally
 
 ```bash
+npm run lint
 npm test
+```
+
+## Build
+
+```bash
+npm run build
 ```
 
 ## Example requests
@@ -41,6 +48,12 @@ Healthcheck:
 
 ```bash
 curl http://localhost:3000/health
+```
+
+WhatsApp webhook verification:
+
+```bash
+curl "http://localhost:3000/webhooks/whatsapp?hub.mode=subscribe&hub.verify_token=change-me&hub.challenge=ok"
 ```
 
 Start a session:
@@ -76,4 +89,5 @@ curl -X POST http://localhost:3000/session/message ^
 - `SESSION_STORE_MODE=memory` is the default for this slice so it can run locally without infrastructure.
 - The session keeps only lightweight context for the active workout: broad goal and available time.
 - Redis config is already wired for the active-session boundary, but the Redis-backed path is not yet covered by automated local tests.
+- Active WhatsApp session keys in Redis use `gymbuddy:session:{phone}` and must only hold current-session state with TTL.
 - Supabase env vars are documented now for the persistent operational boundary, but no operational persistence is implemented in this slice.

@@ -7,6 +7,7 @@ import { MemorySessionStore } from "./modules/session/infra/memory-session-store
 import { RedisSessionStore } from "./modules/session/infra/redis-session-store.js";
 import type { SessionStore } from "./modules/session/infra/session-store.js";
 import { registerSessionRoutes } from "./modules/session/api/session.routes.js";
+import { registerWhatsAppRoutes } from "./routes/whatsapp.routes.js";
 
 export async function createApp(config: AppConfig): Promise<FastifyInstance> {
   const app = Fastify({
@@ -21,6 +22,9 @@ export async function createApp(config: AppConfig): Promise<FastifyInstance> {
   });
 
   await registerHealthRoutes(app);
+  await registerWhatsAppRoutes(app, {
+    verifyToken: config.whatsapp.verifyToken
+  });
   await registerSessionRoutes(app, {
     sessionService
   });

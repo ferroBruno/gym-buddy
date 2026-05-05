@@ -3,6 +3,12 @@ export type AppConfig = {
     nodeEnv: string;
     port: number;
     appBaseUrl: string;
+    whatsapp: {
+        verifyToken: string;
+        accessToken: string;
+        phoneNumberId: string;
+        businessAccountId?: string;
+    };
     sessionStoreMode: SessionStoreMode;
     redisUrl?: string;
     redisTtlSeconds: number;
