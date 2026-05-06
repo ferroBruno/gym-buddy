@@ -1,132 +1,93 @@
 # Gym Buddy v1
 
-O **Gym Buddy** é uma experiência de treino guiado por IA, com foco em simplicidade, clareza e uso prático no dia a dia.
+Lightweight session onboarding slice for Gym Buddy v1.
 
-Nesta primeira versão, o produto é:
+## Scope in this slice
 
-- **gratuito**
-- **WhatsApp-first**
-- guiado por **IA**
-- baseado em orientação **geral e não personalizada**
-- conduzido **passo a passo durante a sessão**
-- sem memória entre sessões
-- apoiado por uma base de conhecimento **curada por especialistas em treinamento**
+- boot a local Fastify backend
+- expose `GET /health`
+- expose `POST /session/start`
+- expose `POST /session/message`
+- establish a current-session-only foundation
+- return the Gym Buddy opening message with free-scope boundaries
+- collect the current session goal and available time
+- generate the first guided workout step
+- support one minimal continuation step based only on current-session context
 
----
+## Install
 
-## Objetivo da v1
+```bash
+npm install
+```
 
-Validar se uma experiência gratuita, simples e guiada por IA consegue ajudar o usuário a treinar com mais direção e confiança, gerando:
+## Run locally
 
-- uso real
-- retorno de uso
-- confiança
-- clareza de proposta
-- potencial de alcance
+```bash
+cp .env.example .env
+npm run dev
+```
 
----
+The server starts on `http://localhost:3000` by default.
 
-## Como funciona
+## Test locally
 
-O Gym Buddy v1 **não entrega o treino inteiro de uma vez**.
+```bash
+npm run lint
+npm test
+```
 
-Em vez disso, ele conduz a sessão de forma progressiva:
-- apresenta o próximo passo
-- usa apenas o contexto da sessão atual
-- não guarda histórico para personalizar sessões futuras
+## Build
 
-Cada sessão:
-1. começa
-2. conduz o treino
-3. termina nela mesma
+```bash
+npm run build
+```
 
----
+## Example requests
 
-## Escopo da v1
+Healthcheck:
 
-### Inclui
-- entrada via WhatsApp
-- fluxo inicial de sessão
-- onboarding leve
-- condução guiada da sessão
-- adaptações simples dentro da sessão
-- uso apenas do contexto da sessão atual
-- persistência operacional mínima
+```bash
+curl http://localhost:3000/health
+```
 
-### Não inclui
-- versão premium
-- personalização individual
-- memória entre sessões
-- acompanhamento longitudinal
-- monetização
-- app próprio
-- infraestrutura pensada para escala
+WhatsApp webhook verification:
 
----
+```bash
+curl "http://localhost:3000/webhooks/whatsapp?hub.mode=subscribe&hub.verify_token=change-me&hub.challenge=ok"
+```
 
-## Stack atual
+Start a session:
 
-- **Node.js 20**
-- **TypeScript**
-- **Fastify**
-- **Meta WhatsApp Cloud API**
-- **Redis** para estado temporário da sessão ativa
-- **Supabase/Postgres** para dados operacionais
-- **LLM hospedado**
-- conhecimento curado em **Markdown / YAML / JSON**
+```bash
+curl -X POST http://localhost:3000/session/start ^
+  -H "content-type: application/json" ^
+  -d "{\"channelUserId\":\"whatsapp:+5511999999999\"}"
+```
 
----
+Continue the session:
 
-## Princípios importantes
+```bash
+curl -X POST http://localhost:3000/session/message ^
+  -H "content-type: application/json" ^
+  -d "{\"sessionId\":\"<session-id>\",\"message\":\"quick full-body session\"}"
+```
 
-- o free é **geral**, não personalizado
-- a IA usa apenas o **contexto da sessão atual**
-- o sistema **não deve criar memória entre sessões**
-- a experiência deve parecer uma **sessão guiada**, não uma ficha estática
-- a v1 deve continuar **simples e enxuta**
+```bash
+curl -X POST http://localhost:3000/session/message ^
+  -H "content-type: application/json" ^
+  -d "{\"sessionId\":\"<session-id>\",\"message\":\"12 minutes\"}"
+```
 
----
+```bash
+curl -X POST http://localhost:3000/session/message ^
+  -H "content-type: application/json" ^
+  -d "{\"sessionId\":\"<session-id>\",\"message\":\"done\"}"
+```
 
-## Arquitetura de alto nível
+## Notes
 
-A lógica principal da v1 é dividida assim:
-
-- **WhatsApp** como canal principal de interação
-- **Backend** responsável por orquestrar a sessão
-- **Redis** para manter apenas o estado temporário da sessão ativa
-- **Supabase/Postgres** para persistência operacional
-- **LLM** para geração da experiência conversacional guiada
-- **Base curada** com regras e conteúdos definidos por especialistas
-
-### Regra importante
-Mesmo usando banco de dados, a v1 **não deve usar persistência para criar memória entre sessões** no plano gratuito.
-
-Ou seja:
-- **Redis** = estado efêmero da sessão em andamento
-- **Supabase/Postgres** = dados operacionais, logs e apoio ao piloto
-- **não** = histórico para personalização do usuário no free
-
----
-
-## Estrutura do projeto
-
-A estrutura pode evoluir, mas a ideia geral do projeto é algo próximo disso:
-
-```text
-.
-├── src/
-│   ├── app/
-│   ├── modules/
-│   ├── routes/
-│   ├── services/
-│   ├── integrations/
-│   ├── lib/
-│   └── index.ts
-├── tests/
-├── .context/
-│   ├── docs/
-│   ├── plans/
-│   └── ...
-├── .env.example
-├── package.json
-└── README.md
+- `SESSION_STORE_MODE=memory` is the default for this slice so it can run locally without infrastructure.
+- The session keeps only lightweight context for the active workout: broad goal and available time.
+- Redis config is already wired for the active-session boundary, but the Redis-backed path is not yet covered by automated local tests.
+- Active WhatsApp session keys in Redis use `gymbuddy:session:{phone}` and must only hold current-session state with TTL.
+- Supabase env vars are documented now for the persistent operational boundary, but no operational persistence is implemented in this slice.

@@ -1,4 +1,6 @@
 supabase.txt
+node_modules/
+.env
 
 # dotcontext runtime state
 .context/plans/
@@ -12,4 +14,3 @@ supabase.txt
 .context/harness/replays/
 .context/harness/datasets/
 .context/**/archive/
-
