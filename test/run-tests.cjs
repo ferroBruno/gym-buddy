@@ -1,7 +1,13 @@
 const assert = require("node:assert/strict");
+const { createHmac } = require("node:crypto");
 
 const { createApp } = require("../dist/app.js");
 const { loadConfig } = require("../dist/config/env.js");
+
+const TEST_SECRET = "test-secret";
+const INTERNAL_AUTH_HEADERS = {
+  authorization: `Bearer ${TEST_SECRET}`
+};
 
 async function run(name, fn) {
   try {
@@ -22,6 +28,19 @@ async function createTestApp() {
   );
 }
 
+function signedJsonPayload(payload) {
+  const body = JSON.stringify(payload);
+  const signature = `sha256=${createHmac("sha256", TEST_SECRET).update(Buffer.from(body)).digest("hex")}`;
+
+  return {
+    body,
+    headers: {
+      "content-type": "application/json",
+      "x-hub-signature-256": signature
+    }
+  };
+}
+
 async function main() {
   await run("GET /health returns ok", async () => {
     const app = await createTestApp();
@@ -36,6 +55,39 @@ async function main() {
     });
 
     await app.close();
+  });
+
+  await run("loadConfig rejects memory sessions in production", async () => {
+    assert.throws(
+      () =>
+        loadConfig({
+          NODE_ENV: "production",
+          WHATSAPP_VERIFY_TOKEN: "verify",
+          WHATSAPP_ACCESS_TOKEN: "access",
+          WHATSAPP_PHONE_NUMBER_ID: "phone",
+          WHATSAPP_APP_SECRET: "secret",
+          INTERNAL_API_TOKEN: "internal",
+          SESSION_STORE_MODE: "memory"
+        }),
+      /SESSION_STORE_MODE=redis/
+    );
+  });
+
+  await run("loadConfig requires rediss Redis URL in production", async () => {
+    assert.throws(
+      () =>
+        loadConfig({
+          NODE_ENV: "production",
+          WHATSAPP_VERIFY_TOKEN: "verify",
+          WHATSAPP_ACCESS_TOKEN: "access",
+          WHATSAPP_PHONE_NUMBER_ID: "phone",
+          WHATSAPP_APP_SECRET: "secret",
+          INTERNAL_API_TOKEN: "internal",
+          SESSION_STORE_MODE: "redis",
+          REDIS_URL: "redis://localhost:6379"
+        }),
+      /REDIS_URL must use rediss/
+    );
   });
 
   await run("GET /webhooks/whatsapp verifies Meta challenge", async () => {
@@ -68,35 +120,37 @@ async function main() {
 
   await run("POST /webhooks/whatsapp normalizes text messages", async () => {
     const app = await createTestApp();
+    const payload = signedJsonPayload({
+      entry: [
+        {
+          changes: [
+            {
+              value: {
+                metadata: {
+                  phone_number_id: "phone-number-id"
+                },
+                messages: [
+                  {
+                    id: "wamid.1",
+                    from: "5511999999999",
+                    timestamp: "1713120000",
+                    type: "text",
+                    text: {
+                      body: "Oi"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    });
     const response = await app.inject({
       method: "POST",
       url: "/webhooks/whatsapp",
-      payload: {
-        entry: [
-          {
-            changes: [
-              {
-                value: {
-                  metadata: {
-                    phone_number_id: "phone-number-id"
-                  },
-                  messages: [
-                    {
-                      id: "wamid.1",
-                      from: "5511999999999",
-                      timestamp: "1713120000",
-                      type: "text",
-                      text: {
-                        body: "Oi"
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        ]
-      }
+      headers: payload.headers,
+      payload: payload.body
     });
 
     assert.equal(response.statusCode, 200);
@@ -108,29 +162,104 @@ async function main() {
     await app.close();
   });
 
-  await run("POST /webhooks/whatsapp ignores unsupported events", async () => {
+  await run("POST /webhooks/whatsapp rejects invalid signatures", async () => {
     const app = await createTestApp();
     const response = await app.inject({
       method: "POST",
       url: "/webhooks/whatsapp",
-      payload: {
-        entry: [
-          {
-            changes: [
-              {
-                value: {
-                  statuses: [
-                    {
-                      id: "wamid.1",
-                      status: "sent"
+      headers: {
+        "content-type": "application/json",
+        "x-hub-signature-256": "sha256=invalid"
+      },
+      payload: JSON.stringify({ entry: [] })
+    });
+
+    assert.equal(response.statusCode, 401);
+    assert.deepEqual(response.json(), {
+      error: "invalid webhook signature"
+    });
+
+    await app.close();
+  });
+
+  await run("POST /webhooks/whatsapp deduplicates message ids", async () => {
+    const app = await createTestApp();
+    const webhookPayload = {
+      entry: [
+        {
+          changes: [
+            {
+              value: {
+                messages: [
+                  {
+                    id: "wamid.duplicate",
+                    from: "5511999999999",
+                    type: "text",
+                    text: {
+                      body: "Oi"
                     }
-                  ]
-                }
+                  }
+                ]
               }
-            ]
-          }
-        ]
-      }
+            }
+          ]
+        }
+      ]
+    };
+
+    const firstPayload = signedJsonPayload(webhookPayload);
+    const firstResponse = await app.inject({
+      method: "POST",
+      url: "/webhooks/whatsapp",
+      headers: firstPayload.headers,
+      payload: firstPayload.body
+    });
+    assert.equal(firstResponse.statusCode, 200);
+    assert.equal(firstResponse.json().status, "received");
+    assert.equal(firstResponse.json().messages, 1);
+
+    const duplicatePayload = signedJsonPayload(webhookPayload);
+    const duplicateResponse = await app.inject({
+      method: "POST",
+      url: "/webhooks/whatsapp",
+      headers: duplicatePayload.headers,
+      payload: duplicatePayload.body
+    });
+
+    assert.equal(duplicateResponse.statusCode, 200);
+    assert.deepEqual(duplicateResponse.json(), {
+      status: "duplicate",
+      messages: 0
+    });
+
+    await app.close();
+  });
+
+  await run("POST /webhooks/whatsapp ignores unsupported events", async () => {
+    const app = await createTestApp();
+    const payload = signedJsonPayload({
+      entry: [
+        {
+          changes: [
+            {
+              value: {
+                statuses: [
+                  {
+                    id: "wamid.1",
+                    status: "sent"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    });
+    const response = await app.inject({
+      method: "POST",
+      url: "/webhooks/whatsapp",
+      headers: payload.headers,
+      payload: payload.body
     });
 
     assert.equal(response.statusCode, 200);
@@ -146,6 +275,7 @@ async function main() {
     const response = await app.inject({
       method: "POST",
       url: "/session/start",
+      headers: INTERNAL_AUTH_HEADERS,
       payload: {
         channelUserId: "whatsapp:+5511999999999"
       }
@@ -165,17 +295,36 @@ async function main() {
     await app.close();
   });
 
+  await run("POST /session/start rejects missing internal auth", async () => {
+    const app = await createTestApp();
+    const response = await app.inject({
+      method: "POST",
+      url: "/session/start",
+      payload: {
+        channelUserId: "whatsapp:+5511999999999"
+      }
+    });
+
+    assert.equal(response.statusCode, 401);
+    assert.deepEqual(response.json(), {
+      error: "unauthorized"
+    });
+
+    await app.close();
+  });
+
   await run("POST /session/start rejects requests without channelUserId", async () => {
     const app = await createTestApp();
     const response = await app.inject({
       method: "POST",
       url: "/session/start",
+      headers: INTERNAL_AUTH_HEADERS,
       payload: {}
     });
 
     assert.equal(response.statusCode, 400);
     assert.deepEqual(response.json(), {
-      error: "channelUserId is required"
+      error: "invalid request"
     });
 
     await app.close();
@@ -186,6 +335,7 @@ async function main() {
     const startResponse = await app.inject({
       method: "POST",
       url: "/session/start",
+      headers: INTERNAL_AUTH_HEADERS,
       payload: {
         channelUserId: "whatsapp:+5511999999999"
       }
@@ -195,6 +345,7 @@ async function main() {
     const goalResponse = await app.inject({
       method: "POST",
       url: "/session/message",
+      headers: INTERNAL_AUTH_HEADERS,
       payload: {
         sessionId: startBody.sessionId,
         message: "quick full-body session"
@@ -203,12 +354,13 @@ async function main() {
 
     assert.equal(goalResponse.statusCode, 200);
     assert.equal(goalResponse.json().stage, "collecting_time");
-    assert.equal(goalResponse.json().context.broadGoal, "quick_full_body");
+    assert.equal(goalResponse.json().context, undefined);
     assert.match(goalResponse.json().nextPrompt, /minutes/i);
 
     const timeResponse = await app.inject({
       method: "POST",
       url: "/session/message",
+      headers: INTERNAL_AUTH_HEADERS,
       payload: {
         sessionId: startBody.sessionId,
         message: "12 minutes"
@@ -218,7 +370,7 @@ async function main() {
     const timeBody = timeResponse.json();
     assert.equal(timeResponse.statusCode, 200);
     assert.equal(timeBody.stage, "first_step_active");
-    assert.equal(timeBody.context.availableTimeMinutes, 12);
+    assert.equal(timeBody.context, undefined);
     assert.match(timeBody.message, /Step 1:/);
     assert.match(timeBody.message, /full body/i);
     assert.match(timeBody.nextPrompt, /Reply 'done'/i);
@@ -231,6 +383,7 @@ async function main() {
     const startResponse = await app.inject({
       method: "POST",
       url: "/session/start",
+      headers: INTERNAL_AUTH_HEADERS,
       payload: {
         channelUserId: "whatsapp:+5511999999999"
       }
@@ -241,6 +394,7 @@ async function main() {
     await app.inject({
       method: "POST",
       url: "/session/message",
+      headers: INTERNAL_AUTH_HEADERS,
       payload: {
         sessionId,
         message: "warm-up"
@@ -250,6 +404,7 @@ async function main() {
     await app.inject({
       method: "POST",
       url: "/session/message",
+      headers: INTERNAL_AUTH_HEADERS,
       payload: {
         sessionId,
         message: "20"
@@ -259,6 +414,7 @@ async function main() {
     const continuationResponse = await app.inject({
       method: "POST",
       url: "/session/message",
+      headers: INTERNAL_AUTH_HEADERS,
       payload: {
         sessionId,
         message: "done"
@@ -268,8 +424,7 @@ async function main() {
     const continuationBody = continuationResponse.json();
     assert.equal(continuationResponse.statusCode, 200);
     assert.equal(continuationBody.stage, "continuation_step_active");
-    assert.equal(continuationBody.context.broadGoal, "warm_up");
-    assert.equal(continuationBody.context.availableTimeMinutes, 20);
+    assert.equal(continuationBody.context, undefined);
     assert.match(continuationBody.message, /Step 2:/);
     assert.match(continuationBody.nextPrompt, /step 2/i);
 
@@ -281,6 +436,7 @@ async function main() {
     const startResponse = await app.inject({
       method: "POST",
       url: "/session/start",
+      headers: INTERNAL_AUTH_HEADERS,
       payload: {
         channelUserId: "whatsapp:+5511999999999"
       }
@@ -291,6 +447,7 @@ async function main() {
     await app.inject({
       method: "POST",
       url: "/session/message",
+      headers: INTERNAL_AUTH_HEADERS,
       payload: {
         sessionId,
         message: "get moving"
@@ -300,6 +457,7 @@ async function main() {
     const timeResponse = await app.inject({
       method: "POST",
       url: "/session/message",
+      headers: INTERNAL_AUTH_HEADERS,
       payload: {
         sessionId,
         message: "not sure"
@@ -318,6 +476,7 @@ async function main() {
     const response = await app.inject({
       method: "POST",
       url: "/session/message",
+      headers: INTERNAL_AUTH_HEADERS,
       payload: {
         sessionId: "missing-session",
         message: "done"

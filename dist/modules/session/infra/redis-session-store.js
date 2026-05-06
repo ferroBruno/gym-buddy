@@ -25,7 +25,16 @@ class RedisSessionStore {
     async get(sessionId) {
         await this.connect();
         const payload = await this.client.get(this.buildKey(sessionId));
-        return payload ? JSON.parse(payload) : null;
+        if (!payload) {
+            return null;
+        }
+        try {
+            const parsed = JSON.parse(payload);
+            return isSession(parsed) ? parsed : null;
+        }
+        catch {
+            return null;
+        }
     }
     async update(session) {
         await this.create(session);
@@ -40,4 +49,17 @@ class RedisSessionStore {
     }
 }
 exports.RedisSessionStore = RedisSessionStore;
+function isSession(value) {
+    if (!value || typeof value !== "object") {
+        return false;
+    }
+    const session = value;
+    return (typeof session.id === "string" &&
+        typeof session.channelUserId === "string" &&
+        typeof session.stage === "string" &&
+        typeof session.startedAt === "string" &&
+        typeof session.updatedAt === "string" &&
+        typeof session.context === "object" &&
+        session.context !== null);
+}
 //# sourceMappingURL=redis-session-store.js.map

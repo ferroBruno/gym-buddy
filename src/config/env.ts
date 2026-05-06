@@ -8,8 +8,10 @@ export type AppConfig = {
     verifyToken: string;
     accessToken: string;
     phoneNumberId: string;
+    appSecret: string;
     businessAccountId?: string;
   };
+  internalApiToken: string;
   sessionStoreMode: SessionStoreMode;
   redisUrl?: string;
   redisTtlSeconds: number;
@@ -62,8 +64,12 @@ function parseNumber(value: string | undefined, fallback: number, fieldName: str
   return parsed;
 }
 
-function parseSessionStoreMode(value: string | undefined): SessionStoreMode {
+function parseSessionStoreMode(value: string | undefined, nodeEnv: string): SessionStoreMode {
   if (!value || value === "memory") {
+    if (nodeEnv === "production") {
+      throw new Error("SESSION_STORE_MODE=redis is required in production.");
+    }
+
     return "memory";
   }
 
@@ -75,8 +81,22 @@ function parseSessionStoreMode(value: string | undefined): SessionStoreMode {
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
+  const nodeEnv = env.NODE_ENV ?? "development";
+  const sessionStoreMode = parseSessionStoreMode(env.SESSION_STORE_MODE, nodeEnv);
+
+  if (nodeEnv === "production" && sessionStoreMode === "redis") {
+    const redisUrl = env.REDIS_URL?.trim();
+    if (!redisUrl) {
+      throw new Error("REDIS_URL is required in production.");
+    }
+
+    if (!redisUrl.startsWith("rediss://")) {
+      throw new Error("REDIS_URL must use rediss:// in production.");
+    }
+  }
+
   return {
-    nodeEnv: env.NODE_ENV ?? "development",
+    nodeEnv,
     port: parseNumber(env.PORT, DEFAULT_PORT, "PORT"),
     appBaseUrl: env.APP_BASE_URL ?? `http://localhost:${env.PORT ?? DEFAULT_PORT}`,
     whatsapp: {
@@ -89,9 +109,15 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       phoneNumberId: requiredString(env, "WHATSAPP_PHONE_NUMBER_ID", {
         allowTestDefault: true
       }),
+      appSecret: requiredString(env, "WHATSAPP_APP_SECRET", {
+        allowTestDefault: true
+      }),
       businessAccountId: env.WHATSAPP_BUSINESS_ACCOUNT_ID
     },
-    sessionStoreMode: parseSessionStoreMode(env.SESSION_STORE_MODE),
+    internalApiToken: requiredString(env, "INTERNAL_API_TOKEN", {
+      allowTestDefault: true
+    }),
+    sessionStoreMode,
     redisUrl: env.REDIS_URL,
     redisTtlSeconds: parseNumber(env.REDIS_TTL_SECONDS, DEFAULT_REDIS_TTL_SECONDS, "REDIS_TTL_SECONDS"),
     supabase: {

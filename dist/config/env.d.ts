@@ -7,8 +7,10 @@ export type AppConfig = {
         verifyToken: string;
         accessToken: string;
         phoneNumberId: string;
+        appSecret: string;
         businessAccountId?: string;
     };
+    internalApiToken: string;
     sessionStoreMode: SessionStoreMode;
     redisUrl?: string;
     redisTtlSeconds: number;

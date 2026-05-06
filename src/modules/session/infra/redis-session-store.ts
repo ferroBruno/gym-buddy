@@ -31,7 +31,16 @@ export class RedisSessionStore implements SessionStore {
   async get(sessionId: string): Promise<Session | null> {
     await this.connect();
     const payload = await this.client.get(this.buildKey(sessionId));
-    return payload ? (JSON.parse(payload) as Session) : null;
+    if (!payload) {
+      return null;
+    }
+
+    try {
+      const parsed = JSON.parse(payload) as unknown;
+      return isSession(parsed) ? parsed : null;
+    } catch {
+      return null;
+    }
   }
 
   async update(session: Session): Promise<void> {
@@ -47,4 +56,21 @@ export class RedisSessionStore implements SessionStore {
   private buildKey(sessionId: string): string {
     return `gym-buddy:session:${sessionId}`;
   }
+}
+
+function isSession(value: unknown): value is Session {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const session = value as Partial<Session>;
+  return (
+    typeof session.id === "string" &&
+    typeof session.channelUserId === "string" &&
+    typeof session.stage === "string" &&
+    typeof session.startedAt === "string" &&
+    typeof session.updatedAt === "string" &&
+    typeof session.context === "object" &&
+    session.context !== null
+  );
 }

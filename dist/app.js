@@ -13,7 +13,31 @@ const session_routes_js_1 = require("./modules/session/api/session.routes.js");
 const whatsapp_routes_js_1 = require("./routes/whatsapp.routes.js");
 async function createApp(config) {
     const app = (0, fastify_1.default)({
+        bodyLimit: 128 * 1024,
         logger: config.nodeEnv !== "test"
+    });
+    app.removeContentTypeParser("application/json");
+    app.addContentTypeParser("application/json", { parseAs: "buffer" }, (request, body, done) => {
+        const rawBody = Buffer.isBuffer(body) ? body : Buffer.from(body);
+        request.rawBody = rawBody;
+        try {
+            const text = rawBody.toString("utf8");
+            done(null, text ? JSON.parse(text) : {});
+        }
+        catch (error) {
+            done(error);
+        }
+    });
+    app.setErrorHandler((error, request, reply) => {
+        if (error.validation) {
+            return reply.status(400).send({
+                error: "invalid request"
+            });
+        }
+        request.log.error(error);
+        return reply.status(error.statusCode && error.statusCode < 500 ? error.statusCode : 500).send({
+            error: error.statusCode && error.statusCode < 500 ? error.message : "internal server error"
+        });
     });
     const sessionStore = createSessionStore(config);
     const sessionService = new session_service_js_1.SessionService(sessionStore);
@@ -22,9 +46,11 @@ async function createApp(config) {
     });
     await (0, health_routes_js_1.registerHealthRoutes)(app);
     await (0, whatsapp_routes_js_1.registerWhatsAppRoutes)(app, {
+        appSecret: config.whatsapp.appSecret,
         verifyToken: config.whatsapp.verifyToken
     });
     await (0, session_routes_js_1.registerSessionRoutes)(app, {
+        internalApiToken: config.internalApiToken,
         sessionService
     });
     return app;
