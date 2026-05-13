@@ -1,100 +1,56 @@
 # Gym Buddy v1
 
-Lightweight session onboarding slice for Gym Buddy v1.
+Arquitetura inicial para validar o Gym Buddy como experiencia conversacional gratuita via Telegram, usando n8n em Docker como orquestrador.
 
-## Scope in this slice
+## Escopo atual
 
-- boot a local Fastify backend
-- expose `GET /health`
-- expose `POST /session/start`
-- expose `POST /session/message`
-- establish a current-session-only foundation
-- return the Gym Buddy opening message with free-scope boundaries
-- collect the current session goal and available time
-- generate the first guided workout step
-- support one minimal continuation step based only on current-session context
+- subir uma stack local com n8n e Postgres via Docker Compose
+- usar Telegram como canal de mensageria
+- manter o n8n como orquestrador principal da v1
+- preparar uma fronteira HTTP para o futuro agente de IA especializado em treinamento
+- preservar sessoes sem memoria longitudinal entre conversas
 
-## Install
+## Requisitos
 
-```bash
-npm install
-```
+- Docker
+- Docker Compose
+- um bot do Telegram criado via BotFather
 
 ## Run locally
 
 ```bash
 cp .env.example .env
-npm run dev
+docker compose up -d
 ```
 
-The server starts on `http://localhost:3000` by default.
+O n8n inicia em:
 
-## Test locally
-
-```bash
-npm run lint
-npm test
+```text
+http://localhost:5678
 ```
 
-## Build
+## Configuracao inicial no n8n
 
-```bash
-npm run build
-```
+1. Acesse `http://localhost:5678`.
+2. Crie o usuario local do n8n.
+3. Crie uma credencial do Telegram usando o token do BotFather.
+4. Crie um workflow com `Telegram Trigger`.
+5. Normalize a mensagem recebida.
+6. Envie uma resposta pelo node `Telegram`.
 
-## Example requests
+O fluxo alvo esta documentado em `.context/docs/n8n-telegram-workflow.md`.
 
-Healthcheck:
+## Variaveis principais
 
-```bash
-curl http://localhost:3000/health
-```
+- `N8N_HOST`
+- `N8N_PORT`
+- `WEBHOOK_URL`
+- `N8N_ENCRYPTION_KEY`
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+- `POSTGRES_DB`
+- `TELEGRAM_BOT_TOKEN`
+- `AI_AGENT_WEBHOOK_URL`
+- `AI_AGENT_API_TOKEN`
 
-WhatsApp webhook verification:
-
-```bash
-curl "http://localhost:3000/webhooks/whatsapp?hub.mode=subscribe&hub.verify_token=change-me&hub.challenge=ok"
-```
-
-Start a session:
-
-```bash
-curl -X POST http://localhost:3000/session/start ^
-  -H "content-type: application/json" ^
-  -H "authorization: Bearer change-me" ^
-  -d "{\"channelUserId\":\"whatsapp:+5511999999999\"}"
-```
-
-Continue the session:
-
-```bash
-curl -X POST http://localhost:3000/session/message ^
-  -H "content-type: application/json" ^
-  -H "authorization: Bearer change-me" ^
-  -d "{\"sessionId\":\"<session-id>\",\"message\":\"quick full-body session\"}"
-```
-
-```bash
-curl -X POST http://localhost:3000/session/message ^
-  -H "content-type: application/json" ^
-  -H "authorization: Bearer change-me" ^
-  -d "{\"sessionId\":\"<session-id>\",\"message\":\"12 minutes\"}"
-```
-
-```bash
-curl -X POST http://localhost:3000/session/message ^
-  -H "content-type: application/json" ^
-  -H "authorization: Bearer change-me" ^
-  -d "{\"sessionId\":\"<session-id>\",\"message\":\"done\"}"
-```
-
-## Notes
-
-- `SESSION_STORE_MODE=memory` is the default for this slice so it can run locally without infrastructure.
-- `SESSION_STORE_MODE=redis` and `REDIS_URL=rediss://...` are required in production.
-- `POST /webhooks/whatsapp` requires a valid Meta `X-Hub-Signature-256` signature.
-- `POST /session/start` and `POST /session/message` require `INTERNAL_API_TOKEN`.
-- The session keeps only lightweight context for the active workout: broad goal and available time.
-- Redis config is already wired for the active-session boundary, but the Redis-backed path is not yet covered by automated local tests.
-- Active session keys in Redis use `gym-buddy:session:{sessionId}` and must only hold current-session state with TTL.
-- Supabase env vars are documented now for the persistent operational boundary, but no operational persistence is implemented in this slice.
+Tokens reais e senhas devem ficar apenas no `.env` local ou nas credenciais criptografadas do n8n.

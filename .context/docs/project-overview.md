@@ -12,7 +12,7 @@ language: pt-BR
 
 ## 1. Proposito
 
-O Gym Buddy v1 existe para validar uma experiencia gratuita de orientacao de treino via WhatsApp em que um agente de IA conduz uma sessao util, clara e confiavel sem fingir personalizacao individual.
+O Gym Buddy v1 existe para validar uma experiencia gratuita de orientacao de treino via Telegram em que um agente de IA conduz uma sessao util, clara e confiavel sem fingir personalizacao individual.
 
 ## 2. Fontes de verdade
 
@@ -29,7 +29,7 @@ Se houver interpretacao ambigua, a prioridade deve ser:
 
 ## 3. Visao consolidada da v1
 
-Gym Buddy v1 e uma experiencia `WhatsApp-first` em que um agente de IA oferece orientacao geral de treino apoiada por conhecimento curado por especialistas. O valor principal nao esta em entregar uma ficha completa, mas em conduzir uma sessao passo a passo usando apenas o contexto da conversa em andamento.
+Gym Buddy v1 e uma experiencia conversacional inicialmente `Telegram-first`, orquestrada por n8n, em que um agente de IA oferece orientacao geral de treino apoiada por conhecimento curado por especialistas. O valor principal nao esta em entregar uma ficha completa, mas em conduzir uma sessao passo a passo usando apenas o contexto da conversa em andamento.
 
 O produto busca validar:
 
@@ -65,7 +65,7 @@ Esta versao nao e:
 
 ### Em escopo
 
-- entrada simples via WhatsApp
+- entrada simples via Telegram
 - explicacao clara do que o servico e e do que nao e
 - onboarding leve por sessao
 - sessao guiada passo a passo
