@@ -1,0 +1,60 @@
+{
+  "name": "000 - Smoke Test - Local Webhook",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "gym-buddy-smoke",
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson",
+        "options": {}
+      },
+      "id": "4ce599b7-2cc8-4640-a4c0-8f5e1b5b3f75",
+      "name": "Local Smoke Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        260,
+        300
+      ],
+      "webhookId": "gym-buddy-smoke"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? {};\nconst message = body.message ?? {};\nconst chat = message.chat ?? {};\n\nreturn [\n  {\n    json: {\n      ok: true,\n      service: 'gym-buddy',\n      smokeTest: 'local-webhook',\n      receivedText: message.text ?? body.text ?? '',\n      chatId: chat.id ?? body.chat_id ?? null,\n      note: 'Local n8n smoke test only. Telegram integration is configured later.',\n    },\n  },\n];\n"
+      },
+      "id": "859efc9b-c5a4-4be0-8f27-28a3f7d05b2b",
+      "name": "Build Smoke Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        300
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Local Smoke Webhook": {
+      "main": [
+        [
+          {
+            "node": "Build Smoke Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8c697565-a8a4-42e5-9947-b1f991decc89",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "000-smoke-test-local-webhook",
+  "tags": []
+}

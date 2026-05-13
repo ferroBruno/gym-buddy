@@ -20,9 +20,13 @@ Primeira versao do produto, focada exclusivamente no plano gratuito e em validar
 
 Camada gratuita do produto. No v1, `free` nao e porta de entrada para premium ja operacionalizado. E o proprio escopo inteiro do produto nesta fase.
 
-### WhatsApp-first
+### Telegram-first
 
-Decisao de produto de usar o WhatsApp como canal principal de entrada e uso para reduzir friccao e aproveitar um ambiente familiar ao usuario.
+Decisao tecnica atual de usar o Telegram como canal inicial de entrada e uso para reduzir friccao de implementacao e validar o agente antes de investir em canais mais caros ou complexos.
+
+### n8n
+
+Orquestrador visual usado na rota tecnica atual para receber mensagens do Telegram, normalizar dados, chamar o futuro core de IA e responder ao usuario.
 
 ### Agente de IA
 

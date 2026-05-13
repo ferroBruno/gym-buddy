@@ -1,0 +1,98 @@
+{
+  "name": "010 - Telegram Echo Smoke",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "5f6ca1c6-7ac3-4c2a-9ea2-c5f145296d02",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        300
+      ],
+      "webhookId": "gym-buddy-telegram-echo-smoke",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_WITH_N8N_TELEGRAM_CREDENTIAL_ID",
+          "name": "Telegram credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const message = $json.message ?? {};\nconst chat = message.chat ?? {};\nconst receivedText = message.text ?? '';\n\nreturn [\n  {\n    json: {\n      chatId: chat.id,\n      receivedText,\n      replyText: receivedText\n        ? `Gym Buddy smoke test ativo. Recebi: ${receivedText}`\n        : 'Gym Buddy smoke test ativo. Recebi sua mensagem.',\n    },\n  },\n];\n"
+      },
+      "id": "f37b3a6d-c4d7-4413-b069-dcbb2f1f9ee7",
+      "name": "Normalize Telegram Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.replyText }}",
+        "additionalFields": {}
+      },
+      "id": "bc98d764-7d07-4199-b2aa-0b6095b32ba7",
+      "name": "Send Echo Reply",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        740,
+        300
+      ],
+      "webhookId": "gym-buddy-telegram-send-echo",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_WITH_N8N_TELEGRAM_CREDENTIAL_ID",
+          "name": "Telegram credential"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize Telegram Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Telegram Message": {
+      "main": [
+        [
+          {
+            "node": "Send Echo Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7f8593c1-e951-4c91-b106-3ff77b3c0ed2",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "010-telegram-echo-smoke",
+  "tags": []
+}

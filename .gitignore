@@ -1,8 +1,12 @@
 supabase.txt
 node_modules/
 .env
+*.log
+.DS_Store
 
 # dotcontext runtime state
+.context/tmp/
+.context/generated/
 .context/plans/
 .context/cache/semantic/
 .context/workflow/

@@ -24,7 +24,7 @@ Este documento operacionaliza o PRD do Gym Buddy v1 dentro de `.context/` para u
 O Gym Buddy v1 e:
 
 - exclusivamente a versao gratuita
-- `WhatsApp-first`
+- `Telegram-first` na rota tecnica atual
 - conduzido por agente de IA
 - baseado em orientacao geral, nao personalizada
 - sustentado por base de conhecimento curada por especialistas em treinamento
@@ -36,7 +36,7 @@ O Gym Buddy v1 e:
 
 ## 4. Objetivos da v1
 
-- validar um MVP `WhatsApp-first` com baixa friccao de entrada
+- validar um MVP conversacional via Telegram com baixa friccao de implementacao e entrada
 - testar se orientacao geral guiada passo a passo gera valor pratico
 - validar utilidade, confianca, retorno de uso e potencial de alcance
 - observar se a curadoria tecnica aumenta percepcao de qualidade
@@ -46,7 +46,7 @@ O Gym Buddy v1 e:
 
 ### Em escopo
 
-- entrada via WhatsApp
+- entrada via Telegram
 - apresentacao clara do servico e de seus limites
 - onboarding simples por sessao
 - enquadramento geral do usuario dentro do escopo do free
@@ -98,7 +98,7 @@ O produto deve parecer uma sessao guiada, nao uma ficha estatica em formato de c
 
 ## 7. Requisitos funcionais consolidados
 
-- permitir inicio da experiencia pelo WhatsApp com baixa friccao
+- permitir inicio da experiencia pelo Telegram com baixa friccao
 - explicar que o servico usa IA e oferece orientacao geral, nao personalizada
 - informar que a qualidade da orientacao vem de base curada por especialistas
 - coletar apenas o minimo necessario para a sessao atual

@@ -1,27 +1,49 @@
 # AGENTS.md
 
 ## Dev environment tips
-- Install dependencies with `npm install` before running scaffolds.
-- Use `npm run dev` for the interactive TypeScript session that powers local experimentation.
-- Run `npm run build` to refresh the CommonJS bundle in `dist/` before shipping changes.
-- Store generated artefacts in `.context/` so reruns stay deterministic.
+- Use `docker compose up -d` to run the local n8n + Postgres stack.
+- Use `docker compose config --quiet` to validate Compose syntax after infrastructure changes.
+- Store generated planning or workflow artefacts in `.context/` so reruns stay deterministic.
+- Do not reintroduce the removed Fastify, WhatsApp, Redis, or Node build stack unless explicitly requested.
+- Copy `.env.example` to `.env` before running the stack, then set local secrets there.
 
 ## Testing instructions
-- Execute `npm run test` to run the Jest suite.
-- Append `-- --watch` while iterating on a failing spec.
-- Trigger `npm run build && npm run test` before opening a PR to mimic CI.
-- Add or update tests alongside any generator or CLI changes.
+- Execute `docker compose config --quiet` for structural validation.
+- For local smoke validation, run `docker compose up -d` and confirm n8n responds on `http://localhost:5678`.
+- Validate Telegram workflows manually inside n8n until workflow exports or automated checks exist.
 
 ## PR instructions
 - Follow Conventional Commits (for example, `feat(scaffolding): add doc links`).
-- Cross-link new scaffolds in `docs/README.md` and `agents/README.md` so future agents can find them.
-- Attach sample CLI output or generated markdown when behaviour shifts.
-- Confirm the built artefacts in `dist/` match the new source changes.
+- Cross-link new docs in `.context/docs/README.md` so future agents can find them.
+- Attach sample n8n workflow output or generated markdown when behaviour shifts.
+- Confirm Docker Compose validation passes before opening a PR.
 
 ## Repository map
-- Document the major directories so agents know where to work.
+- `.context/`: project context, planning notes, generated prompts, and workflow documentation.
+- `.context/docs/`: human-readable documentation index and product/technical references.
+- `.context/workflows/`: exported n8n workflows, workflow drafts, and test payloads.
+- `.context/prompts/`: agent prompts, guardrails, playbooks, and evaluation prompts.
+- `docker-compose.yml`: local infrastructure for n8n and Postgres.
+- `.env.example`: documented environment variables for local setup.
+- `.env`: local secrets and environment values. Never commit this file.
+
+## Security instructions
+- Do not commit real API keys, Telegram tokens, OpenAI keys, Google credentials, OAuth secrets, private URLs, or production secrets.
+- Keep `N8N_ENCRYPTION_KEY` stable after credentials are created, because n8n uses it to encrypt stored credentials.
+- Prefer storing integration secrets as n8n credentials instead of hardcoding them in workflows or documentation.
+
+## Local setup
+1. Copy `.env.example` to `.env`.
+2. Replace `POSTGRES_PASSWORD`.
+3. Generate a stable `N8N_ENCRYPTION_KEY` with at least 32 characters.
+4. Run `docker compose config --quiet`.
+5. Run `docker compose up -d`.
+6. Validate n8n at `http://localhost:5678`.
+
+## Telegram/webhook note
+- Telegram webhooks require a public HTTPS URL.
+- `WEBHOOK_URL=http://localhost:5678/` is enough for local UI testing, but not enough for Telegram webhook delivery.
+- For Telegram testing, use a temporary tunnel such as ngrok or cloudflared and update `WEBHOOK_URL` and `N8N_EDITOR_BASE_URL` in `.env`.
 
 ## AI Context References
 - Documentation index: `.context/docs/README.md`
-- Agent playbooks: `.context/agents/README.md`
-- Contributor guide: `CONTRIBUTING.md`
