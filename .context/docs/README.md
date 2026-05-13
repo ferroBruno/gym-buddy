@@ -20,6 +20,7 @@ The current technical focus is a local n8n + Postgres stack for validating Teleg
 - `knowledge-base-audit-template.md`: fillable template for future knowledge-base audit batches.
 - `knowledge-conversion-map.md`: mapping from raw materials to reviewed operational knowledge layers.
 - `knowledge-inventory-schema.md`: schema for manually inventorying knowledge-base files.
+- `../knowledge/inventory/inventory-001-initial.md`: first local inventory for knowledge-base material.
 - `core-agent-plan.md`: implementation plan and contracts for the first agent core.
 - `core-smoke-workflow.md`: local validation guide for the first rule-based core workflow.
 - `local-setup.md`: local Docker Compose setup and first-run notes.
