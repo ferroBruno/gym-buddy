@@ -71,8 +71,9 @@ Persistencia permitida:
 
 - configuracoes internas do n8n
 - credenciais criptografadas
-- historico tecnico de execucoes
+- historico tecnico de execucoes, sem virar memoria funcional do usuario
 - eventos operacionais leves
+- materiais brutos sanitizados para auditoria, quando houver justificativa e revisao
 
 Persistencia proibida:
 
@@ -80,6 +81,7 @@ Persistencia proibida:
 - historico de treino usado para personalizacao
 - perfil longitudinal do usuario
 - continuidade automatica entre conversas
+- conversas reais ou dados pessoais usados como contexto direto do agente
 
 ## 8. Checklist para mudancas futuras
 

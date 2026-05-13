@@ -16,6 +16,10 @@ The current technical focus is a local n8n + Postgres stack for validating Teleg
 
 - `project-overview.md`: concise product source of truth for the current prototype.
 - `knowledge-architecture.md`: layered knowledge model for the Gym Buddy agent core.
+- `knowledge-base-audit-process.md`: manual audit process for raw knowledge-base material before curated conversion.
+- `knowledge-base-audit-template.md`: fillable template for future knowledge-base audit batches.
+- `knowledge-conversion-map.md`: mapping from raw materials to reviewed operational knowledge layers.
+- `knowledge-inventory-schema.md`: schema for manually inventorying knowledge-base files.
 - `core-agent-plan.md`: implementation plan and contracts for the first agent core.
 - `core-smoke-workflow.md`: local validation guide for the first rule-based core workflow.
 - `local-setup.md`: local Docker Compose setup and first-run notes.
@@ -31,6 +35,7 @@ The documentation set was intentionally reduced to avoid stale context. Older br
 
 ## Planned documentation
 
-- Google Drive editorial workflow
-- Postgres knowledge catalog design
-- Core workflow implementation notes
+- Manual knowledge-base audit reports
+- Curated knowledge conversion notes
+- Future Google Drive editorial workflow, only after explicit scope decision
+- Future Postgres knowledge catalog design, only after explicit data contract

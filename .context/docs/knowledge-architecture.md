@@ -18,7 +18,7 @@ O objetivo e manter o agente simples, auditavel e seguro: ele deve responder a p
 
 ## Papel do Google Drive
 
-O Google Drive pode ser usado como reposititorio editorial e fonte humana de organizacao.
+O Google Drive pode ser usado como reposititorio editorial e fonte humana de organizacao. Nesta etapa, esse uso e apenas manual e documental; nao ha sincronizacao automatica, runtime no Drive ou leitura direta pelo agente.
 
 Uso recomendado:
 
@@ -36,9 +36,9 @@ Uso nao recomendado nesta fase:
 
 ## Papel do Postgres
 
-O Postgres local deve ser tratado como banco operacional do n8n e, futuramente, como armazenamento estruturado para dados que precisem de consulta previsivel.
+O Postgres local deve ser tratado como banco operacional do n8n. Qualquer uso como armazenamento estruturado de conhecimento e fase futura e depende de contrato de dados explicito.
 
-Possiveis usos futuros:
+Possiveis usos futuros, fora da etapa atual:
 
 - catalogo de documentos curados;
 - versoes aprovadas de playbooks;
@@ -46,7 +46,7 @@ Possiveis usos futuros:
 - sessoes temporarias;
 - metadados de sincronizacao com Drive.
 
-Nesta etapa, nao criar tabelas novas ate existir contrato claro de dados.
+Nesta etapa, nao criar tabelas novas, catalogo de conhecimento, metadados de sincronizacao ou consultas de runtime.
 
 ## Camadas
 
@@ -61,7 +61,7 @@ Pode conter:
 - referencias tecnicas;
 - materiais de especialistas;
 - anotacoes humanas;
-- historicos de conversa;
+- historicos de conversa sanitizados, somente como insumo bruto de revisao;
 - duvidas reais;
 - treinos enviados;
 - feedbacks.
@@ -103,9 +103,8 @@ Contem:
 - como lidar com dor;
 - como lidar com lesoes;
 - como responder sobre carga;
-- regras de personalizacao;
-- tom de voz;
-- formato das respostas.
+- regras de personalizacao e limites de autonomia;
+- criterios de interrupcao ou redirecionamento.
 
 Funcao: impedir extrapolacao de papel, falsa personalizacao e respostas inseguras para casos de risco.
 
@@ -156,10 +155,11 @@ Raw Knowledge nunca entra diretamente nessa cadeia.
 
 ## Proxima etapa
 
-Criar uma primeira versao pequena e testavel:
+A proxima etapa documental e preparar auditoria e conversao manual da base de conhecimento, sem runtime do agente:
 
-- poucos documentos tecnicos curados;
-- guardrails centrais;
-- playbooks de maior recorrencia;
-- casos de avaliacao;
-- workflow n8n que chama o core de forma controlada.
+- inventario manual de Raw Knowledge;
+- auditoria por camada, risco e prioridade;
+- registro de lacunas, contradicoes e conteudos sensiveis;
+- selecao de candidatos para conversao curada posterior.
+
+Prompts, playbooks executaveis, casos finais de avaliacao e workflows do core continuam como fase futura ate decisao explicita de escopo.

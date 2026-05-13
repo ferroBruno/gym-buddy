@@ -83,6 +83,8 @@ O core retorna:
 
 ## Etapas recomendadas
 
+Nota de escopo: este plano descreve a evolucao futura do core. Para a etapa atual de auditoria da base de conhecimento, nao criar prompts finais, playbooks executaveis, workflows finais, RAG, sincronizacao com Google Drive ou core de IA executavel.
+
 1. Criar prompts e playbooks versionados.
 2. Criar casos de avaliacao.
 3. Criar um workflow `020-gym-buddy-core-smoke`. Concluido.

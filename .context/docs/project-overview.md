@@ -104,7 +104,7 @@ Esta versao nao e:
 - quais adaptacoes simples sao permitidas sem ultrapassar o escopo
 - qual e o nivel minimo aceitavel de registro operacional do piloto
 - como comunicar curadoria tecnica e limites do free com mais precisao
-- como sincronizar Google Drive editorial com um futuro catalogo estruturado sem permitir Raw Knowledge no atendimento
+- como avaliar, em fase futura, catalogacao editorial ou Google Drive sem permitir Raw Knowledge no atendimento
 
 ## 9. Diretriz para proximos trabalhos
 
