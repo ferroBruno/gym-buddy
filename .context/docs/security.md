@@ -31,7 +31,6 @@ Segredos devem existir apenas no `.env` local, em variaveis do runtime ou nas cr
 - `TELEGRAM_BOT_TOKEN`
 - `N8N_ENCRYPTION_KEY`
 - `POSTGRES_PASSWORD`
-- `AI_AGENT_API_TOKEN`
 - chaves de provedor de IA quando forem definidas
 
 Arquivos versionados podem conter apenas placeholders como `change-me`.
@@ -58,7 +57,7 @@ O n8n deve:
 
 ## 6. Futuro core de IA
 
-Quando o core do agente existir, a chamada HTTP deve:
+Quando o core do agente usar integracao externa, a chamada deve:
 
 - exigir token interno ou mecanismo equivalente
 - aceitar payload minimo e validado

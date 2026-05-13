@@ -20,6 +20,7 @@ Arquitetura inicial para validar o Gym Buddy como experiencia conversacional gra
 
 ```bash
 cp .env.example .env
+docker compose config --quiet
 docker compose up -d
 ```
 
@@ -34,11 +35,11 @@ http://localhost:5678
 1. Acesse `http://localhost:5678`.
 2. Crie o usuario local do n8n.
 3. Crie uma credencial do Telegram usando o token do BotFather.
-4. Crie um workflow com `Telegram Trigger`.
-5. Normalize a mensagem recebida.
-6. Envie uma resposta pelo node `Telegram`.
+4. Importe ou crie workflows a partir de `.context/workflows/`.
+5. Remapeie credenciais reais dentro do n8n quando importar templates versionados.
+6. Teste primeiro os smoke workflows antes de evoluir o core.
 
-O fluxo alvo esta documentado em `.context/docs/n8n-telegram-workflow.md`.
+Os guias atuais estao em `.context/docs/README.md`.
 
 ## Variaveis principais
 
@@ -49,8 +50,5 @@ O fluxo alvo esta documentado em `.context/docs/n8n-telegram-workflow.md`.
 - `POSTGRES_USER`
 - `POSTGRES_PASSWORD`
 - `POSTGRES_DB`
-- `TELEGRAM_BOT_TOKEN`
-- `AI_AGENT_WEBHOOK_URL`
-- `AI_AGENT_API_TOKEN`
 
 Tokens reais e senhas devem ficar apenas no `.env` local ou nas credenciais criptografadas do n8n.

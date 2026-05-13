@@ -85,7 +85,7 @@ O core retorna:
 
 1. Criar prompts e playbooks versionados.
 2. Criar casos de avaliacao.
-3. Criar um workflow `020-gym-buddy-core-smoke`.
+3. Criar um workflow `020-gym-buddy-core-smoke`. Concluido.
 4. Conectar o workflow Telegram echo ao core smoke.
 5. Testar com mensagens reais pelo telefone.
 6. Refinar guardrails antes de ampliar conhecimento tecnico.

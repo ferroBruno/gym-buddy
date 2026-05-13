@@ -14,18 +14,16 @@ language: pt-BR
 
 O Gym Buddy v1 existe para validar uma experiencia gratuita de orientacao de treino via Telegram em que um agente de IA conduz uma sessao util, clara e confiavel sem fingir personalizacao individual.
 
-## 2. Fontes de verdade
+## 2. Fonte de verdade operacional
 
-As fontes principais desta consolidacao sao:
-
-- [project-brief.md](./project-brief.md)
-- [product-requirements-v1.md](./product-requirements-v1.md)
+Este documento e a fonte curta de verdade de produto para a fase atual.
 
 Se houver interpretacao ambigua, a prioridade deve ser:
 
-1. preservar a verdade do produto declarada no brief e no PRD
-2. manter o escopo da v1 enxuto
-3. evitar qualquer deriva para premium, memoria entre sessoes ou coaching personalizado
+1. manter o escopo da v1 enxuto
+2. preservar a experiencia Telegram-first com n8n
+3. evitar deriva para premium, memoria entre sessoes ou coaching personalizado
+4. tratar ideias maiores como fase futura ou backlog candidato
 
 ## 3. Visao consolidada da v1
 
@@ -106,6 +104,7 @@ Esta versao nao e:
 - quais adaptacoes simples sao permitidas sem ultrapassar o escopo
 - qual e o nivel minimo aceitavel de registro operacional do piloto
 - como comunicar curadoria tecnica e limites do free com mais precisao
+- como sincronizar Google Drive editorial com um futuro catalogo estruturado sem permitir Raw Knowledge no atendimento
 
 ## 9. Diretriz para proximos trabalhos
 

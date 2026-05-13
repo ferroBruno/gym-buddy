@@ -14,22 +14,20 @@ The current technical focus is a local n8n + Postgres stack for validating Teleg
 
 ## Existing documentation
 
+- `project-overview.md`: concise product source of truth for the current prototype.
 - `knowledge-architecture.md`: layered knowledge model for the Gym Buddy agent core.
 - `core-agent-plan.md`: implementation plan and contracts for the first agent core.
+- `core-smoke-workflow.md`: local validation guide for the first rule-based core workflow.
 - `local-setup.md`: local Docker Compose setup and first-run notes.
 - `workflow-export-conventions.md`: conventions for versioning n8n workflow exports.
 - `smoke-test-workflow.md`: import and validation guide for the local smoke test workflow.
 - `telegram-testing-plan.md`: practical plan for testing Telegram from a phone through the bot.
-- `project-brief.md`: foundational strategic briefing artifact.
-- `project-overview.md`: consolidated agent-facing source of truth for v1.
-- `product-requirements-v1.md`: operational PRD distilled for future execution.
-- `architecture.md`: current n8n + Telegram architecture for the v1 guided session product.
-- `tooling.md`: current Docker Compose, n8n, Postgres, and Telegram tooling baseline.
-- `n8n-telegram-workflow.md`: target workflow shape for the Telegram and n8n architecture.
-- `testing-strategy.md`: validation and quality baseline.
-- `data-flow.md`: current Telegram, n8n, and future-agent integration flow.
 - `security.md`: current security and secrets baseline.
 - `glossary.md`: stable domain vocabulary and boundary terms.
+
+## Removed or Consolidated
+
+The documentation set was intentionally reduced to avoid stale context. Older broad planning documents were consolidated into `project-overview.md`, `knowledge-architecture.md`, `core-agent-plan.md`, and the workflow-specific guides.
 
 ## Planned documentation
 
