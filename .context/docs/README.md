@@ -14,6 +14,8 @@ The current technical focus is a local n8n + Postgres stack for validating Teleg
 
 ## Existing documentation
 
+- `knowledge-architecture.md`: layered knowledge model for the Gym Buddy agent core.
+- `core-agent-plan.md`: implementation plan and contracts for the first agent core.
 - `local-setup.md`: local Docker Compose setup and first-run notes.
 - `workflow-export-conventions.md`: conventions for versioning n8n workflow exports.
 - `smoke-test-workflow.md`: import and validation guide for the local smoke test workflow.
@@ -31,6 +33,6 @@ The current technical focus is a local n8n + Postgres stack for validating Teleg
 
 ## Planned documentation
 
-- Gym Buddy guardrails
-- Gym Buddy playbooks
-- Evaluation cases
+- Google Drive editorial workflow
+- Postgres knowledge catalog design
+- Core workflow implementation notes
