@@ -49,8 +49,10 @@ O agente de IA especializado em treinamento permanece como o core do produto, ma
 Incluido agora:
 
 - Docker Compose para n8n com Postgres local.
-- Variaveis de ambiente para n8n, Postgres, Telegram e futuro agente.
+- Variaveis de ambiente para n8n e Postgres.
 - Documentacao da arquitetura alvo e do fluxo inicial.
+- Workflow local de smoke test via Webhook.
+- Workflow Telegram echo smoke para validar bot, tunnel e resposta pelo telefone.
 
 Adiado:
 
@@ -58,4 +60,4 @@ Adiado:
 - prompt final do agente
 - regras finais de sessao
 - persistencia operacional detalhada
-- importacao/exportacao de workflow JSON do n8n
+- workflow Gym Buddy com regras reais de treino

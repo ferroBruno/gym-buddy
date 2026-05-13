@@ -42,6 +42,7 @@ Para a stack principal:
 
 ```bash
 cp .env.example .env
+docker compose config --quiet
 docker compose up -d
 ```
 
@@ -70,16 +71,11 @@ http://localhost:5678
 
 ### Telegram
 
-- `TELEGRAM_BOT_TOKEN`
-
-O token deve ser criado no BotFather e configurado como credencial no n8n. O arquivo `.env` local pode guardar o valor para referencia operacional, mas o token real nao deve ser versionado.
+O token deve ser criado no BotFather e configurado como credencial no n8n. O token real nao deve ser versionado.
 
 ### Futuro core de IA
 
-- `AI_AGENT_WEBHOOK_URL`
-- `AI_AGENT_API_TOKEN`
-
-Essas variaveis definem a fronteira prevista para quando o core do agente for implementado.
+O core do agente ainda nao foi implementado. Quando existir, a fronteira recomendada continua sendo HTTP ou subworkflow, sem adicionar backend proprio antes de uma decisao explicita.
 
 ## 6. Regras de implementacao
 
@@ -94,6 +90,5 @@ Essas variaveis definem a fronteira prevista para quando o core do agente for im
 - escolha final do provedor de IA
 - contrato completo do agente de treinamento
 - schema de eventos operacionais
-- workflow JSON exportado do n8n
 - deploy publico do n8n
 - estrategia de tunnel/webhook para ambiente local

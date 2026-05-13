@@ -90,3 +90,14 @@ Persistencia proibida:
 - Logs evitam tokens e conteudo sensivel?
 - O core de IA, se chamado, exige autenticacao interna?
 - A mudanca ainda preserva free-only, sessao atual e ausencia de memoria?
+
+## 9. Checklist para exports do n8n
+
+Antes de commitar workflows exportados:
+
+- Remover tokens reais.
+- Remover IDs locais reais de credenciais.
+- Remover URLs temporarias de tunnel.
+- Remover `chat_id` real.
+- Remover payloads reais de usuario.
+- Manter credenciais como placeholders e remapear manualmente no n8n apos importacao.
