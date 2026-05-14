@@ -1,0 +1,60 @@
+{
+  "name": "020 - Gym Buddy Core Smoke",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "gym-buddy-core-smoke",
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson",
+        "options": {}
+      },
+      "id": "8d09d976-86c7-4f42-888b-6b9f77004205",
+      "name": "Core Smoke Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "webhookId": "gym-buddy-core-smoke"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? {};\nconst messageText = String(body.messageText ?? body.text ?? '').trim();\nconst normalized = messageText.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');\n\nfunction includesAny(values) {\n  return values.some((value) => normalized.includes(value));\n}\n\nlet intent = 'fallback';\nlet riskLevel = 'normal';\nlet needsClarification = false;\nlet replyText = 'Ainda nao entendi bem o que voce precisa. Me diga se voce quer ajuda com treino, substituicao de exercicio, execucao ou algum desconforto.';\n\nif (normalized === '/start' || includesAny(['comecar', 'inicio', 'oi', 'ola'])) {\n  intent = 'onboarding';\n  needsClarification = true;\n  replyText = 'Oi. Eu sou o Gym Buddy. Posso te ajudar com duvidas praticas de treino, substituicoes e conceitos basicos. Para comecar, voce quer montar um treino, ajustar um exercicio ou tirar uma duvida?';\n} else if (includesAny(['dor', 'doendo', 'machuquei', 'lesao', 'lesao', 'desconforto', 'fisgada', 'joelho', 'ombro', 'lombar'])) {\n  intent = 'discomfort';\n  riskLevel = includesAny(['forte', 'aguda', 'fisgada', 'piorando', 'inchado', 'formigamento', 'peito', 'tontura']) ? 'stop' : 'caution';\n  needsClarification = riskLevel !== 'stop';\n  replyText = riskLevel === 'stop'\n    ? 'Isso nao parece uma duvida comum de treino. Evite insistir no movimento agora e procure avaliacao de um profissional qualificado, especialmente se a dor for forte, aguda, estiver piorando ou vier com outros sintomas.'\n    : 'Se ha desconforto, reduza ou pare o movimento que provoca o sintoma por enquanto. Onde voce sente isso e em qual exercicio acontece?';\n} else if (includesAny(['trocar', 'substituir', 'substituicao', 'alternativa', 'no lugar de'])) {\n  intent = 'substitution';\n  needsClarification = true;\n  replyText = 'Posso ajudar com uma substituicao. Qual exercicio voce quer trocar, por qual motivo e quais equipamentos voce tem disponiveis?';\n} else if (includesAny(['treino', 'montar', 'divisao', 'serie', 'ficha'])) {\n  intent = 'workout_request';\n  needsClarification = true;\n  replyText = 'Consigo te ajudar com uma estrutura geral de treino. Para nao fingir personalizacao, preciso saber: objetivo, dias por semana, equipamentos disponiveis, experiencia e se existe dor ou restricao.';\n} else if (includesAny(['como fazer', 'execucao', 'tecnica', 'postura', 'movimento'])) {\n  intent = 'exercise_question';\n  needsClarification = true;\n  replyText = 'Posso explicar a execucao em termos gerais. Qual exercicio voce quer entender melhor?';\n} else if (includesAny(['falha', 'rir'])) {\n  intent = 'concept_explanation';\n  replyText = 'Treinar perto da falha significa terminar a serie com poucas repeticoes em reserva. Exemplo: RIR 2 quer dizer que voce provavelmente conseguiria fazer mais 2 repeticoes com boa tecnica. A ideia e desafiar o musculo sem transformar toda serie em perda de tecnica.';\n} else if (includesAny(['volume', 'intensidade', 'frequencia', 'descanso', 'progressao', 'hipertrofia'])) {\n  intent = 'concept_explanation';\n  replyText = 'Em termos simples: hipertrofia depende de consistencia, volume suficiente, series desafiadoras, progressao e recuperacao. Se quiser, eu explico esse conceito com um exemplo pratico.';\n}\n\nreturn [\n  {\n    json: {\n      replyText,\n      intent,\n      riskLevel,\n      needsClarification,\n      shouldPersist: false,\n      input: {\n        channel: body.channel ?? 'local-smoke',\n        chatId: body.chatId ?? null,\n        messageText,\n        messageType: body.messageType ?? 'text',\n        receivedAt: body.receivedAt ?? new Date().toISOString()\n      }\n    }\n  }\n];\n"
+      },
+      "id": "f249ebf2-8ef6-4c93-a287-17f3eeb4976a",
+      "name": "Classify Core Intent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        300
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Core Smoke Webhook": {
+      "main": [
+        [
+          {
+            "node": "Classify Core Intent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9f443ff7-b560-4098-bff4-e762810afc55",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "020-gym-buddy-core-smoke",
+  "tags": []
+}

@@ -14,23 +14,34 @@ The current technical focus is a local n8n + Postgres stack for validating Teleg
 
 ## Existing documentation
 
+- `project-overview.md`: concise product source of truth for the current prototype.
+- `ai-core-evolution-plan.md`: phased plan for the Gym Buddy AI core, rule-based fallback, and local Ollama direction.
+- `knowledge-architecture.md`: layered knowledge model for the Gym Buddy agent core.
+- `knowledge-base-audit-process.md`: manual audit process for raw knowledge-base material before curated conversion.
+- `knowledge-base-audit-template.md`: fillable template for future knowledge-base audit batches.
+- `knowledge-conversion-map.md`: mapping from raw materials to reviewed operational knowledge layers.
+- `knowledge-inventory-schema.md`: schema for manually inventorying knowledge-base files.
+- `../knowledge/inventory/inventory-001-initial.md`: first local inventory for knowledge-base material.
+- `core-agent-plan.md`: implementation plan and contracts for the first agent core.
+- `mvp-workflow-plan.md`: minimal n8n workflow plan for the Telegram-first Gym Buddy MVP.
+- `mvp-technical-validation.md`: technical validation checklist for Telegram, n8n executions, tunnel, and MVP logs.
+- `mvp-operations-plan.md`: 24/7 local operation path and n8n UI observability guidance.
+- `ollama-local-llm.md`: local Ollama setup for the optional zero-cost LLM path.
+- `core-smoke-workflow.md`: local validation guide for the first rule-based core workflow.
 - `local-setup.md`: local Docker Compose setup and first-run notes.
 - `workflow-export-conventions.md`: conventions for versioning n8n workflow exports.
 - `smoke-test-workflow.md`: import and validation guide for the local smoke test workflow.
 - `telegram-testing-plan.md`: practical plan for testing Telegram from a phone through the bot.
-- `project-brief.md`: foundational strategic briefing artifact.
-- `project-overview.md`: consolidated agent-facing source of truth for v1.
-- `product-requirements-v1.md`: operational PRD distilled for future execution.
-- `architecture.md`: current n8n + Telegram architecture for the v1 guided session product.
-- `tooling.md`: current Docker Compose, n8n, Postgres, and Telegram tooling baseline.
-- `n8n-telegram-workflow.md`: target workflow shape for the Telegram and n8n architecture.
-- `testing-strategy.md`: validation and quality baseline.
-- `data-flow.md`: current Telegram, n8n, and future-agent integration flow.
 - `security.md`: current security and secrets baseline.
 - `glossary.md`: stable domain vocabulary and boundary terms.
 
+## Removed or Consolidated
+
+The documentation set was intentionally reduced to avoid stale context. Older broad planning documents were consolidated into `project-overview.md`, `knowledge-architecture.md`, `core-agent-plan.md`, and the workflow-specific guides.
+
 ## Planned documentation
 
-- Gym Buddy guardrails
-- Gym Buddy playbooks
-- Evaluation cases
+- Manual knowledge-base audit reports
+- Curated knowledge conversion notes
+- Future Google Drive editorial workflow, only after explicit scope decision
+- Future Postgres knowledge catalog design, only after explicit data contract
