@@ -142,14 +142,14 @@ Ambiente local:
 Credenciais no n8n:
 
 - Telegram Bot API token;
-- credencial OpenAI nao e obrigatoria para o MVP sem budget.
+- nao ha credencial de LLM externa obrigatoria neste MVP.
 
 Variaveis ou parametros internos do workflow:
 
 - `SYSTEM_PROMPT`: conteudo versionado em `.context/prompts/mvp/gym-buddy-system-prompt.md`;
 - `OLLAMA_MODEL`: modelo local usado no node de LLM;
 - `LLM_TEMPERATURE`: valor sugerido entre `0.2` e `0.5`.
-- `OLLAMA_BASE_URL`: futuro endpoint local, por exemplo `http://host.docker.internal:11434`, se Ollama for usado fora do Docker Compose.
+- `OLLAMA_BASE_URL`: endpoint local documentado para a stack, por exemplo `http://ollama:11434` dentro do Docker Compose.
 
 ## Como testar manualmente
 
@@ -158,9 +158,9 @@ Variaveis ou parametros internos do workflow:
 3. Rodar `docker compose config --quiet`.
 4. Rodar `docker compose up -d`.
 5. Abrir `http://localhost:5678`.
-6. Criar as credenciais de Telegram e LLM dentro do n8n.
+6. Criar a credencial de Telegram dentro do n8n.
 7. Criar o workflow com os nodes descritos neste plano.
-8. Alternativa: importar `.context/workflows/030-gym-buddy-mvp-telegram.json` e selecionar manualmente as credenciais reais nos nodes de Telegram e OpenAI.
+8. Alternativa: importar `.context/workflows/030-gym-buddy-mvp-telegram.json` e selecionar manualmente a credencial real nos nodes de Telegram.
 9. Configurar `WEBHOOK_URL` e `N8N_EDITOR_BASE_URL` com HTTPS publico quando for testar Telegram webhook real.
 10. Ativar o workflow.
 11. Enviar os casos de `.context/prompts/evaluation/mvp-manual-test-cases.md` pelo Telegram.

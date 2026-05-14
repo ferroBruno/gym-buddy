@@ -32,6 +32,23 @@ Compose:
 docker compose config --quiet
 ```
 
+## Validacao principal pela UI do n8n
+
+Os dados de execucao ficam salvos no Postgres do n8n e podem ser revisados pela interface.
+
+1. Abrir `N8N_EDITOR_BASE_URL`.
+2. Entrar em `Executions`.
+3. Filtrar pelo workflow `030 - Gym Buddy MVP Telegram`.
+4. Abrir a execucao mais recente.
+5. Conferir os nodes:
+   - `Route And Build Context`: campos do Telegram, intent, risco e rota.
+   - `Call Local LLM`: chamada ao Ollama quando aplicavel.
+   - `Normalize Local LLM Reply`: decisao entre LLM e fallback.
+   - `Log Reply`: objeto tecnico estruturado.
+   - `Send Reply`: envio final ao Telegram.
+
+Use terminal somente como apoio quando a UI nao mostrar execucao nova.
+
 Ambiente publico usado pelo webhook:
 
 ```powershell
@@ -46,7 +63,9 @@ Activated workflow "030 - Gym Buddy MVP Telegram"
 
 ## Como saber se o Telegram chegou
 
-Consultar execucoes recentes no Postgres do n8n:
+Primeiro, olhar a aba `Executions` do n8n.
+
+Se preferir uma checagem tecnica pelo banco, consultar execucoes recentes no Postgres do n8n:
 
 ```powershell
 docker compose exec postgres psql -U n8n -d n8n -c "select id, \"workflowId\", status, mode, \"startedAt\", \"stoppedAt\" from execution_entity order by id desc limit 20;"
@@ -76,7 +95,9 @@ Procurar:
 
 ## Logs de conversa no MVP
 
-O workflow `030` registra um log estruturado na propria execucao do n8n e tambem em `console.log` com prefixo:
+O workflow `030` registra um log estruturado na propria execucao do n8n, no node `Log Reply`.
+
+O terminal tambem recebe uma copia com prefixo:
 
 ```text
 GYM_BUDDY_TECH_LOG
@@ -107,9 +128,9 @@ Para consultar logs recentes:
 docker compose logs --tail 200 n8n | Select-String 'GYM_BUDDY_TECH_LOG'
 ```
 
-## Falha controlada do LLM
+## Falha controlada do LLM local
 
-Se a OpenAI retornar erro, por exemplo `insufficient_quota`, o workflow deve:
+Se o Ollama/local LLM retornar erro ou resposta vazia, o workflow deve:
 
 - continuar a execucao;
 - registrar `llm_status: error`;
