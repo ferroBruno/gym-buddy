@@ -15,6 +15,7 @@ The current technical focus is a local n8n + Postgres stack for validating Teleg
 ## Existing documentation
 
 - `project-overview.md`: concise product source of truth for the current prototype.
+- `ai-core-evolution-plan.md`: phased plan for the Gym Buddy AI core, rule-based fallback, and local Ollama direction.
 - `knowledge-architecture.md`: layered knowledge model for the Gym Buddy agent core.
 - `knowledge-base-audit-process.md`: manual audit process for raw knowledge-base material before curated conversion.
 - `knowledge-base-audit-template.md`: fillable template for future knowledge-base audit batches.
@@ -23,6 +24,7 @@ The current technical focus is a local n8n + Postgres stack for validating Teleg
 - `../knowledge/inventory/inventory-001-initial.md`: first local inventory for knowledge-base material.
 - `core-agent-plan.md`: implementation plan and contracts for the first agent core.
 - `mvp-workflow-plan.md`: minimal n8n workflow plan for the Telegram-first Gym Buddy MVP.
+- `mvp-technical-validation.md`: technical validation checklist for Telegram, n8n executions, tunnel, and MVP logs.
 - `core-smoke-workflow.md`: local validation guide for the first rule-based core workflow.
 - `local-setup.md`: local Docker Compose setup and first-run notes.
 - `workflow-export-conventions.md`: conventions for versioning n8n workflow exports.

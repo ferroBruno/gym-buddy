@@ -58,7 +58,13 @@ Saida:
    - Exemplos negativos: `nao`, `nao ajudou`, `ruim`, `negativo`.
    - Se for feedback, responder sem chamar LLM.
 
-4. `Set - Build LLM Input`
+4. `Code - Intent Router`
+   - Classifica intents MVP conhecidas.
+   - Define `intent`, `risk_level`, `requires_llm`, `fixed_reply` e `fallback_reason`.
+   - Intents conhecidas usam resposta rule-based para funcionar sem custo de API.
+   - Mensagens fora das intents cobertas podem seguir para LLM quando houver provedor disponivel.
+
+5. `Set - Build LLM Input`
    - Monta o prompt com:
      - system prompt fixo de `.context/prompts/mvp/gym-buddy-system-prompt.md`;
      - mensagem atual do usuario;
@@ -67,26 +73,31 @@ Saida:
    - Nao consultar Google Drive.
    - Nao consultar memoria de usuario.
 
-5. `LLM`
+6. `LLM`
    - Chama o modelo configurado por credencial do n8n.
    - Usa o system prompt fixo.
    - Retorna apenas texto final para Telegram.
    - Temperatura sugerida: baixa a moderada, por exemplo `0.2` a `0.5`.
+   - Se falhar, o workflow deve continuar e usar fallback rule-based ou mensagem tecnica amigavel.
 
-6. `Telegram - Send Message`
+7. `Telegram - Send Message`
    - Envia a resposta para `chat_id`.
    - Usa o texto retornado pelo LLM ou a resposta fixa de feedback.
 
-7. `Set - Minimal Log`
+8. `Set - Minimal Log`
    - Cria um objeto de log na propria execucao do n8n:
      - `channel`;
      - `user_id`;
      - `chat_id`;
      - `username`;
      - `message_id`;
+     - `intent`;
+     - `risk_level`;
      - `message_text`;
      - `is_feedback`;
      - `feedback_value`;
+     - `requires_llm`;
+     - `fallback_reason`;
      - `reply_text`;
      - `received_at`;
      - `handled_at`.
@@ -131,13 +142,14 @@ Ambiente local:
 Credenciais no n8n:
 
 - Telegram Bot API token;
-- credencial do provedor de LLM.
+- credencial do provedor de LLM, opcional enquanto o fallback rule-based cobre as intents MVP.
 
 Variaveis ou parametros internos do workflow:
 
 - `SYSTEM_PROMPT`: conteudo versionado em `.context/prompts/mvp/gym-buddy-system-prompt.md`;
 - `MODEL_NAME`: modelo selecionado no node de LLM;
 - `LLM_TEMPERATURE`: valor sugerido entre `0.2` e `0.5`.
+- `OLLAMA_BASE_URL`: futuro endpoint local, por exemplo `http://host.docker.internal:11434`, se Ollama for usado fora do Docker Compose.
 
 ## Como testar manualmente
 
