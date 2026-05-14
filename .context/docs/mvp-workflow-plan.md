@@ -73,8 +73,8 @@ Saida:
    - Nao consultar Google Drive.
    - Nao consultar memoria de usuario.
 
-6. `LLM`
-   - Chama o modelo configurado por credencial do n8n.
+6. `Local LLM`
+   - Chama o Ollama local quando `requires_llm=true`.
    - Usa o system prompt fixo.
    - Retorna apenas texto final para Telegram.
    - Temperatura sugerida: baixa a moderada, por exemplo `0.2` a `0.5`.
@@ -142,12 +142,12 @@ Ambiente local:
 Credenciais no n8n:
 
 - Telegram Bot API token;
-- credencial do provedor de LLM, opcional enquanto o fallback rule-based cobre as intents MVP.
+- credencial OpenAI nao e obrigatoria para o MVP sem budget.
 
 Variaveis ou parametros internos do workflow:
 
 - `SYSTEM_PROMPT`: conteudo versionado em `.context/prompts/mvp/gym-buddy-system-prompt.md`;
-- `MODEL_NAME`: modelo selecionado no node de LLM;
+- `OLLAMA_MODEL`: modelo local usado no node de LLM;
 - `LLM_TEMPERATURE`: valor sugerido entre `0.2` e `0.5`.
 - `OLLAMA_BASE_URL`: futuro endpoint local, por exemplo `http://host.docker.internal:11434`, se Ollama for usado fora do Docker Compose.
 

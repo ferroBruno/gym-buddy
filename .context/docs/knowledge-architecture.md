@@ -46,7 +46,7 @@ Possiveis usos futuros, fora da etapa atual:
 - sessoes temporarias;
 - metadados de sincronizacao com Drive.
 
-Nesta etapa, nao criar tabelas novas, catalogo de conhecimento, metadados de sincronizacao ou consultas de runtime.
+Nesta etapa, nao criar tabelas novas, catalogo de conhecimento, metadados de sincronizacao ou consultas dinamicas de runtime.
 
 ## Camadas
 
@@ -141,6 +141,18 @@ Contem:
 
 Funcao: separar o raciocinio operacional do formato final enviado ao usuario.
 
+## Runtime MVP com cards curados
+
+O MVP pode usar uma versao simples de injecao controlada de contexto:
+
+- o roteador detecta a intent;
+- a intent seleciona um ou poucos cards curados compactos;
+- o card entra no prompt do LLM local;
+- Raw Knowledge continua proibido no runtime;
+- nao ha RAG, embeddings ou busca automatica.
+
+Essa abordagem e temporaria e auditavel. Ela permite testar qualidade do modelo local sem criar infraestrutura prematura.
+
 ## Prioridade de decisao
 
 O core deve aplicar as camadas nesta ordem:
@@ -162,4 +174,4 @@ A proxima etapa documental e preparar auditoria e conversao manual da base de co
 - registro de lacunas, contradicoes e conteudos sensiveis;
 - selecao de candidatos para conversao curada posterior.
 
-Prompts, playbooks executaveis, casos finais de avaliacao e workflows do core continuam como fase futura ate decisao explicita de escopo.
+Prompts, playbooks executaveis e workflows devem continuar pequenos e revisaveis. RAG, embeddings, catalogo em Postgres e sincronizacao com Drive continuam como fase futura ate decisao explicita de escopo.

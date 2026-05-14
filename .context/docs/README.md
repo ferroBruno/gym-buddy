@@ -25,6 +25,7 @@ The current technical focus is a local n8n + Postgres stack for validating Teleg
 - `core-agent-plan.md`: implementation plan and contracts for the first agent core.
 - `mvp-workflow-plan.md`: minimal n8n workflow plan for the Telegram-first Gym Buddy MVP.
 - `mvp-technical-validation.md`: technical validation checklist for Telegram, n8n executions, tunnel, and MVP logs.
+- `ollama-local-llm.md`: local Ollama setup for the optional zero-cost LLM path.
 - `core-smoke-workflow.md`: local validation guide for the first rule-based core workflow.
 - `local-setup.md`: local Docker Compose setup and first-run notes.
 - `workflow-export-conventions.md`: conventions for versioning n8n workflow exports.

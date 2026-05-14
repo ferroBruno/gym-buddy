@@ -107,7 +107,7 @@ Cada mensagem deve permitir verificar:
 ## Proximos marcos
 
 1. MVP sem custo: intents conhecidas respondem via rule-based.
-2. Ollama local opcional: node de LLM local para intent `fallback` e refinamento de respostas.
+2. Ollama local opcional: node de LLM local para intent `fallback` e refinamento de respostas. Iniciado no workflow MVP.
 3. Avaliacao comparativa: rule-based vs Ollama nos casos manuais.
 4. Curadoria de conhecimento: transformar material bruto em playbooks revisados.
 5. Memoria explicita e consentida, somente apos estabilizar qualidade e seguranca.
