@@ -22,6 +22,7 @@ The current technical focus is a local n8n + Postgres stack for validating Teleg
 - `knowledge-inventory-schema.md`: schema for manually inventorying knowledge-base files.
 - `../knowledge/inventory/inventory-001-initial.md`: first local inventory for knowledge-base material.
 - `core-agent-plan.md`: implementation plan and contracts for the first agent core.
+- `mvp-workflow-plan.md`: minimal n8n workflow plan for the Telegram-first Gym Buddy MVP.
 - `core-smoke-workflow.md`: local validation guide for the first rule-based core workflow.
 - `local-setup.md`: local Docker Compose setup and first-run notes.
 - `workflow-export-conventions.md`: conventions for versioning n8n workflow exports.
