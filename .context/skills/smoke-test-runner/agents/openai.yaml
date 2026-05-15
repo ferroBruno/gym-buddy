@@ -1,0 +1,3 @@
+interface:
+  display_name: "Smoke Test Runner"
+  short_description: "Run local Compose, n8n, and workflow smoke checks"

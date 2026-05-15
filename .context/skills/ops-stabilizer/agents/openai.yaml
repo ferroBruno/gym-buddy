@@ -1,0 +1,3 @@
+interface:
+  display_name: "Ops Stabilizer"
+  short_description: "Validate environment, tunnel, and runtime readiness"

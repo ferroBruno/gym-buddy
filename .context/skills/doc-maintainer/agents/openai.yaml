@@ -1,0 +1,3 @@
+interface:
+  display_name: "Doc Maintainer"
+  short_description: "Maintain docs indexes and validate markdown links"

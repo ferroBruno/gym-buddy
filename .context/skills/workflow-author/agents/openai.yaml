@@ -1,0 +1,3 @@
+interface:
+  display_name: "Workflow Author"
+  short_description: "Validate and maintain Gym Buddy n8n workflow exports"

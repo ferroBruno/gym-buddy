@@ -7,6 +7,12 @@
 - Do not reintroduce the removed Fastify, WhatsApp, Redis, or Node build stack unless explicitly requested.
 - Copy `.env.example` to `.env` before running the stack, then set local secrets there.
 
+## Local automation skills
+- Check `.context/docs/automation-skill-catalog.md` before starting recurring workflow, knowledge, smoke-test, documentation, or operations tasks.
+- Use the matching local skill in `.context/skills/<skill-name>/SKILL.md` when the task fits one of the cataloged responsibilities.
+- Use `.context/scripts/` validation scripts referenced by those skills before considering related work complete.
+- Treat these repo-local skills as controlled project process. Do not replace them with external or global skills unless explicitly requested.
+
 ## Testing instructions
 - Execute `docker compose config --quiet` for structural validation.
 - For local smoke validation, run `docker compose up -d` and confirm n8n responds on `http://localhost:5678`.

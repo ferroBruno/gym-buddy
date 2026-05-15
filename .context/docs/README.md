@@ -30,8 +30,10 @@ The current technical focus is a local n8n + Postgres stack for validating Teleg
 - `core-smoke-workflow.md`: local validation guide for the first rule-based core workflow.
 - `local-setup.md`: local Docker Compose setup and first-run notes.
 - `workflow-export-conventions.md`: conventions for versioning n8n workflow exports.
+- `workflow-validation-checklist.md`: initial checklist for validating n8n workflow JSON exports.
 - `smoke-test-workflow.md`: import and validation guide for the local smoke test workflow.
 - `telegram-testing-plan.md`: practical plan for testing Telegram from a phone through the bot.
+- `automation-skill-catalog.md`: initial catalog of automation skills and their responsibilities.
 - `security.md`: current security and secrets baseline.
 - `glossary.md`: stable domain vocabulary and boundary terms.
 
