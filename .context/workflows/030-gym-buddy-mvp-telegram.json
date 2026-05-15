@@ -1,233 +1,241 @@
-{
-  "name": "030 - Gym Buddy MVP Telegram",
-  "nodes": [
-    {
-      "parameters": {
-        "updates": [
-          "message"
-        ],
-        "additionalFields": {}
-      },
-      "id": "7f0e71b1-c937-4e05-bfc4-17e349527afd",
-      "name": "Telegram Trigger",
-      "type": "n8n-nodes-base.telegramTrigger",
-      "typeVersion": 1.2,
-      "position": [
-        220,
-        300
-      ],
-      "webhookId": "gym-buddy-mvp-telegram",
-      "credentials": {
-        "telegramApi": {
-          "id": "REPLACE_WITH_N8N_TELEGRAM_CREDENTIAL_ID",
-          "name": "Telegram credential"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "const message = $json.message ?? {};\nconst from = message.from ?? {};\nconst chat = message.chat ?? {};\nconst text = typeof message.text === 'string' ? message.text.trim() : '';\nconst normalized = text.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');\n\nfunction hasAny(values) {\n  return values.some((value) => normalized.includes(value));\n}\n\nconst cards = {\n  rest: `CARD: Rest Intervals\\n- Short rests can work for lighter or isolation exercises.\\n- Longer rests help preserve performance in heavier compound exercises.\\n- Practical range: 1-2 min for lighter work, 2-3 min for heavier compound work.\\n- If technique or performance drops sharply, rest longer.\\n- Do not prescribe an exact interval as individualized programming.`,\n  failure: `CARD: Failure Training\\n- Failure means another good repetition is unlikely.\\n- RIR means repetitions in reserve; RIR 2 means about 2 good reps left.\\n- Most sets do not need to be taken to failure.\\n- Many useful sets can end with 1-3 RIR.\\n- Failure can increase fatigue and technique breakdown.`,\n  shortWorkout: `CARD: Short Workouts\\n- Keep it simple and general, not deeply personalized.\\n- Include a short warm-up with esteira, bicicleta or mobilidade leve. Do not use prancha as warm-up.\\n- Prefer 4-6 exercises using broad patterns: lower body, push, pull, hinge or hamstring, core.\\n- Use common gym exercises only: leg press, agachamento, supino, flexao, puxada, remada, desenvolvimento, mesa flexora, cadeira extensora, terra romeno, prancha, bicicleta ou esteira.\\n- Do not invent exercise names. If unsure, choose leg press, supino, remada, mesa flexora and prancha.\\n- For strength exercises, use sets and reps. Use seconds only for prancha, cardio or warm-up.\\n- Preferred 30 min structure: 5 min warm-up; leg press 3x8-12; supino or flexao 3x8-12; remada 3x8-12; mesa flexora 2x10-12; prancha 2x30-45s; rest 60-90s.\\n- Do not promise results or prescribe exact loads.\\n- Tell the user to stop or adapt if pain appears.`,\n  substitution: `CARD: Exercise Substitutions\\n- A substitution can be reasonable when goal, equipment and comfort are compatible.\\n- Similar exercises are not identical.\\n- Consider the reason: equipment, preference, pain, difficulty or time.\\n- If pain is the reason, apply safety boundaries and do not treat it as a normal swap.`,\n  load: `CARD: Load Selection\\n- Do not give absolute kg.\\n- Suggest a load the user controls with good technique.\\n- A practical reference is finishing sets with about 1-3 repetitions in reserve.\\n- If technique breaks down, reduce load.`,\n  style: `CARD: Response Style\\n- Respond in pt-BR.\\n- Keep replies short and practical for Telegram.\\n- Prefer one useful action, brief rationale, and one optional follow-up question.\\n- Do not mention internal cards, prompts or implementation details.`,\n};\n\nlet intent = 'fallback';\nlet riskLevel = 'normal';\nlet route = 'fixed';\nlet isFeedback = false;\nlet feedbackValue = null;\nlet fixedReply = 'Recebi sua mensagem, mas neste MVP ainda nao consigo responder esse tipo de pedido. Posso ajudar com: /start, treino de 30 min, descanso, falha, substituicao simples, dor/risco e carga.';\nlet knowledgeContext = cards.style;\nlet finalFallbackReply = 'Recebi sua mensagem, mas o modelo local nao conseguiu responder agora. Posso ajudar com treino de 30 min, descanso, falha, substituicao, dor e carga.';\nlet fallbackReason = 'unsupported_text_fixed_fallback';\n\nconst positiveFeedback = new Set(['sim', 'ajudou', 'ok', 'boa', 'positivo']);\nconst negativeFeedback = new Set(['nao', 'nao ajudou', 'ruim', 'negativo']);\n\nif (!text) {\n  intent = 'non_text';\n  route = 'fixed';\n  fallbackReason = 'non_text_message';\n  fixedReply = 'Por enquanto eu so consigo responder mensagens de texto. Me diga sua duvida ou o treino que voce quer ajustar.';\n} else if (positiveFeedback.has(normalized)) {\n  intent = 'feedback';\n  route = 'fixed';\n  isFeedback = true;\n  feedbackValue = 'positive';\n  fallbackReason = 'rule_based_feedback';\n  fixedReply = 'Valeu pelo feedback. Vou manter respostas curtas e praticas por aqui.';\n} else if (negativeFeedback.has(normalized)) {\n  intent = 'feedback';\n  route = 'fixed';\n  isFeedback = true;\n  feedbackValue = 'negative';\n  fallbackReason = 'rule_based_feedback';\n  fixedReply = 'Obrigado pelo feedback. Me diga em uma frase o que faltou ou o que voce queria ajustar.';\n} else if (hasAny(['dor', 'doendo', 'machuquei', 'lesao', 'fisgada', 'formigamento', 'ombro', 'joelho', 'lombar', 'peito', 'tontura'])) {\n  intent = 'discomfort';\n  route = 'fixed';\n  riskLevel = hasAny(['forte', 'aguda', 'fisgada', 'formigamento', 'peito', 'tontura', 'piorando']) ? 'stop' : 'caution';\n  fallbackReason = 'mandatory_safety_response';\n  fixedReply = riskLevel === 'stop'\n    ? 'Para agora e evite repetir o movimento que causou isso. Nao consigo diagnosticar pelo chat. Se a dor foi forte, aguda, esta piorando, teve formigamento, tontura ou dor no peito, procure avaliacao profissional ou atendimento urgente.'\n    : 'Se apareceu dor ou desconforto, reduza ou pare o movimento por enquanto. Nao treine atravessando dor. Se persistir ou piorar, procure avaliacao profissional. Posso sugerir uma alternativa geral mais conservadora se voce me disser o exercicio.';\n} else if (hasAny(['quantos kg', 'quanto peso', 'carga exata', 'qual carga', 'kg eu coloco'])) {\n  intent = 'exact_load';\n  route = 'fixed';\n  fallbackReason = 'mandatory_load_boundary';\n  fixedReply = 'Nao vou indicar kg exato sem avaliar tecnica e contexto. Use uma carga que voce controle bem e termine a serie com cerca de 1 a 3 repeticoes em reserva. Se a tecnica quebrar, reduza.';\n} else if (hasAny(['lembra', 'ontem', 'treino anterior', 'ultima vez', 'semana passada'])) {\n  intent = 'memory_request';\n  route = 'fixed';\n  fallbackReason = 'mandatory_no_memory_boundary';\n  fixedReply = 'Neste MVP eu nao lembro sessoes anteriores. Me reenvie o treino ou diga o objetivo de hoje que eu te ajudo a partir da mensagem atual.';\n} else if (normalized === '/start' || hasAny(['oi', 'ola', 'comecar', 'inicio'])) {\n  intent = 'onboarding';\n  route = 'fixed';\n  fallbackReason = 'rule_based_onboarding';\n  fixedReply = 'Oi. Eu sou o Gym Buddy. Posso ajudar com duvidas rapidas de treino, descanso, falha, substituicoes e ideias gerais de treino curto. Me diga o que voce precisa agora.';\n} else if (hasAny(['treino rapido', 'treino de 30', '30 min', '30 minutos', 'meia hora'])) {\n  intent = 'short_workout';\n  knowledgeContext = `${cards.shortWorkout}\\n\\n${cards.load}\\n\\n${cards.style}`;\n  finalFallbackReply = 'Ideia geral de treino de 30 min:\\n\\n1. Aquecimento: 5 min leve.\\n2. Agachamento ou leg press: 3x8-12.\\n3. Supino ou flexao: 3x8-12.\\n4. Remada: 3x8-12.\\n5. Mesa flexora ou terra romeno: 2x10-12.\\n6. Prancha: 2x30-45s.\\n\\nDescanse 60-90s, use carga controlavel e pare se sentir dor fora do normal.';\n  route = 'local_llm';\n  fixedReply = null;\n  fallbackReason = 'primary_llm_disabled_local_llm_fallback';\n} else if (hasAny(['descanso', 'descansar', 'intervalo'])) {\n  intent = 'rest_question';\n  knowledgeContext = `${cards.rest}\\n\\n${cards.style}`;\n  finalFallbackReply = 'Como regra geral: 1-2 min funciona bem para exercicios leves ou isoladores; 2-3 min costuma ajudar em exercicios pesados como agachamento, supino e remada. Se a tecnica cair muito, descanse mais.';\n  route = 'local_llm';\n  fixedReply = null;\n  fallbackReason = 'primary_llm_disabled_local_llm_fallback';\n} else if (hasAny(['falha', 'ate a falha', 'rir', 'repeticoes em reserva'])) {\n  intent = 'failure_question';\n  knowledgeContext = `${cards.failure}\\n\\n${cards.style}`;\n  finalFallbackReply = 'Nao precisa ir ate a falha em toda serie. Uma boa referencia e terminar muitas series com 1 a 3 repeticoes em reserva. Falha pode ser util em alguns momentos, mas aumenta fadiga e risco de perder tecnica.';\n  route = 'local_llm';\n  fixedReply = null;\n  fallbackReason = 'primary_llm_disabled_local_llm_fallback';\n} else if (hasAny(['trocar', 'substituir', 'substituicao', 'no lugar de', 'alternativa'])) {\n  intent = 'substitution';\n  knowledgeContext = `${cards.substitution}\\n\\n${cards.style}`;\n  finalFallbackReply = 'Pode fazer sentido trocar, mas exercicios parecidos nao sao identicos. Se for por equipamento ou preferencia, me diga o exercicio atual e a opcao que voce tem. Se for por dor, pare o movimento e trate como sinal de cautela.';\n  route = 'local_llm';\n  fixedReply = null;\n  fallbackReason = 'primary_llm_disabled_local_llm_fallback';\n} else if (hasAny(['personalizado', 'personalizada', 'pra mim', 'para mim'])) {\n  intent = 'personalized_workout_request';\n  route = 'fixed';\n  fallbackReason = 'mandatory_personalization_boundary';\n  fixedReply = 'Posso ajudar com uma estrutura geral, mas nao vou fingir personalizacao profunda sem avaliacao. Para ajustar melhor, me diga so 2 coisas: objetivo principal e equipamentos disponiveis.';\n}\n\nconst requiresLlm = route === 'local_llm';\nconst systemPrompt = `Voce e o Gym Buddy, um assistente pratico de apoio a treino para Telegram. Responda em pt-BR. Use apenas orientacao geral, curta e segura. Nao diagnostique, nao trate lesao, nao prescreva reabilitacao, nao indique kg exato, nao prometa resultado e nao finja memoria ou personalizacao profunda. Casos de dor ou risco ja foram bloqueados antes de chegar aqui. Use somente nomes comuns de exercicios de academia; nao invente nomes. Nao mencione bastidores, cards ou implementacao.`;\nconst userPrompt = `Intent: ${intent}\\nRisk level: ${riskLevel}\\nContexto curado:\\n${knowledgeContext}\\n\\nMensagem do usuario:\\n${text}\\n\\nGere uma resposta curta e pratica para Telegram.`;\n\nreturn [{\n  json: {\n    channel: 'telegram',\n    user_id: from.id ?? null,\n    chat_id: chat.id ?? null,\n    username: from.username ?? null,\n    first_name: from.first_name ?? null,\n    message_id: message.message_id ?? null,\n    message_text: text,\n    message_type: text ? 'text' : 'non_text',\n    received_at: message.date ? new Date(message.date * 1000).toISOString() : new Date().toISOString(),\n    intent,\n    risk_level: riskLevel,\n    route,\n    is_feedback: isFeedback,\n    feedback_value: feedbackValue,\n    requires_llm: requiresLlm,\n    fixed_reply: fixedReply,\n    final_fallback_reply: finalFallbackReply,\n    fallback_reason: fallbackReason,\n    knowledge_context: knowledgeContext,\n    primary_llm_status: 'disabled_budget',\n    system_prompt: systemPrompt,\n    user_prompt: userPrompt\n  }\n}];\n"
-      },
-      "id": "2afefc3b-2551-4511-80a8-cd67857e0a57",
-      "name": "Route And Build Context",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        500,
-        300
-      ]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "boolean": [
-            {
-              "value1": "={{ $json.requires_llm }}",
-              "operation": "equal",
-              "value2": true
-            }
-          ]
-        }
-      },
-      "id": "0b40efcf-72ad-4049-b622-d11e7377d83d",
-      "name": "Needs Local LLM",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
-      "position": [
-        760,
-        300
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "const baseUrl = 'http://ollama:11434';\nconst model = 'llama3.2:3b';\n\ntry {\n  const response = await fetch(`${baseUrl}/api/chat`, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({\n      model,\n      stream: false,\n      options: {\n        temperature: 0.25,\n        num_predict: 260\n      },\n      messages: [\n        { role: 'system', content: $json.system_prompt },\n        { role: 'user', content: $json.user_prompt }\n      ]\n    })\n  });\n\n  const raw = await response.text();\n  let parsed = {};\n  try { parsed = raw ? JSON.parse(raw) : {}; } catch (error) { parsed = { raw }; }\n\n  if (!response.ok) {\n    return [{ json: { ...$json, error: { provider: 'ollama', code: response.status, message: parsed.error || response.statusText || 'Ollama request failed', raw: parsed } } }];\n  }\n\n  return [{ json: { ...$json, llm_provider: 'ollama', llm_model: model, text: parsed.message?.content ?? parsed.response ?? '', raw_ollama_response: parsed } }];\n} catch (error) {\n  return [{ json: { ...$json, error: { provider: 'ollama', code: error.name || 'OLLAMA_REQUEST_ERROR', message: error.message || 'Ollama request failed' } } }];\n}\n"
-      },
-      "id": "d45dcd5a-0516-46d7-9688-93dec971ac11",
-      "name": "Call Local LLM",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1020,
-        220
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "const source = $('Route And Build Context').first().json;\nconst errorMessage = $json.error?.message ?? null;\nconst errorCode = $json.error?.code ?? null;\nconst provider = $json.error?.provider ?? $json.llm_provider ?? 'ollama';\nconst hasLlmError = Boolean($json.error || errorCode);\nconst modelReply = String($json.text ?? '').trim();\nconst replyText = hasLlmError ? source.final_fallback_reply : (modelReply || source.final_fallback_reply);\n\nreturn [{\n  json: {\n    ...source,\n    reply_text: replyText,\n    handled_at: new Date().toISOString(),\n    llm_provider: provider,\n    llm_model: $json.llm_model ?? null,\n    llm_status: hasLlmError ? 'error' : 'success',\n    llm_error_code: errorCode,\n    llm_error_message: errorMessage,\n    used_final_fallback: hasLlmError || !modelReply\n  }\n}];\n"
-      },
-      "id": "02f92c45-f875-499a-af1a-8c4d5f8f2b9b",
-      "name": "Normalize Local LLM Reply",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1280,
-        220
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "return [{ json: { ...$json, reply_text: $json.fixed_reply, handled_at: new Date().toISOString(), llm_provider: null, llm_status: 'not_called', used_final_fallback: false } }];\n"
-      },
-      "id": "3fd6c5e8-dd5a-4101-bf22-03c2ffdcf1b8",
-      "name": "Build Fixed Reply",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1020,
-        420
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "const log = {\n  event: 'gym_buddy_mvp_message',\n  channel: $json.channel,\n  user_id: $json.user_id,\n  chat_id: $json.chat_id,\n  username: $json.username,\n  message_id: $json.message_id,\n  message_type: $json.message_type,\n  message_text: $json.message_text,\n  intent: $json.intent,\n  risk_level: $json.risk_level,\n  route: $json.route,\n  requires_llm: $json.requires_llm,\n  primary_llm_status: $json.primary_llm_status,\n  llm_provider: $json.llm_provider,\n  llm_model: $json.llm_model ?? null,\n  llm_status: $json.llm_status,\n  llm_error_code: $json.llm_error_code ?? null,\n  llm_error_message: $json.llm_error_message ?? null,\n  fallback_reason: $json.fallback_reason,\n  used_final_fallback: $json.used_final_fallback,\n  reply_text: $json.reply_text,\n  received_at: $json.received_at,\n  handled_at: $json.handled_at\n};\nconsole.log('GYM_BUDDY_TECH_LOG ' + JSON.stringify(log));\nreturn [{ json: { ...$json, technical_log: log } }];\n"
-      },
-      "id": "6bbd6d93-3e82-47f7-adff-d180f8bbb70b",
-      "name": "Log Reply",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1540,
-        300
-      ]
-    },
-    {
-      "parameters": {
-        "chatId": "={{ $json.chat_id }}",
-        "text": "={{ $json.reply_text }}",
-        "additionalFields": {}
-      },
-      "id": "c16c5c51-49c8-48ec-8e95-a2beab299af5",
-      "name": "Send Reply",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [
-        1800,
-        300
-      ],
-      "webhookId": "gym-buddy-mvp-send-reply",
-      "credentials": {
-        "telegramApi": {
-          "id": "REPLACE_WITH_N8N_TELEGRAM_CREDENTIAL_ID",
-          "name": "Telegram credential"
-        }
-      }
-    }
-  ],
-  "pinData": {},
-  "connections": {
-    "Telegram Trigger": {
-      "main": [
-        [
-          {
-            "node": "Route And Build Context",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Route And Build Context": {
-      "main": [
-        [
-          {
-            "node": "Needs Local LLM",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Needs Local LLM": {
-      "main": [
-        [
-          {
-            "node": "Call Local LLM",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Build Fixed Reply",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Call Local LLM": {
-      "main": [
-        [
-          {
-            "node": "Normalize Local LLM Reply",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Normalize Local LLM Reply": {
-      "main": [
-        [
-          {
-            "node": "Log Reply",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Build Fixed Reply": {
-      "main": [
-        [
-          {
-            "node": "Log Reply",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Log Reply": {
-      "main": [
-        [
-          {
-            "node": "Send Reply",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
-  },
-  "active": false,
-  "settings": {
-    "executionOrder": "v1"
-  },
-  "versionId": "0c51689c-99a7-4062-82d6-3f6cd0d93d0d",
-  "meta": {
-    "templateCredsSetupCompleted": true
-  },
-  "id": "030-gym-buddy-mvp-telegram",
-  "tags": []
+﻿{
+    "name":  "030 - Gym Buddy MVP Telegram",
+    "nodes":  [
+                  {
+                      "parameters":  {
+                                         "updates":  [
+                                                         "message"
+                                                     ],
+                                         "additionalFields":  {
+
+                                                              }
+                                     },
+                      "id":  "7f0e71b1-c937-4e05-bfc4-17e349527afd",
+                      "name":  "Telegram Trigger",
+                      "type":  "n8n-nodes-base.telegramTrigger",
+                      "typeVersion":  1.2,
+                      "position":  [
+                                       220,
+                                       300
+                                   ],
+                      "webhookId":  "gym-buddy-mvp-telegram",
+                      "credentials":  {
+                                          "telegramApi":  {
+                                                              "id":  "REPLACE_WITH_N8N_TELEGRAM_CREDENTIAL_ID",
+                                                              "name":  "Telegram credential"
+                                                          }
+                                      }
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const message = $json.message ?? {};\nconst from = message.from ?? {};\nconst chat = message.chat ?? {};\nconst text = typeof message.text === \u0027string\u0027 ? message.text.trim() : \u0027\u0027;\nconst normalized = text.toLowerCase().normalize(\u0027NFD\u0027).replace(/[\\u0300-\\u036f]/g, \u0027\u0027);\n\nfunction hasAny(values) {\n  return values.some((value) =\u003e normalized.includes(value));\n}\n\nfunction isGreetingOnly() {\n  return [\u0027oi\u0027, \u0027ola\u0027, \u0027bom dia\u0027, \u0027boa tarde\u0027, \u0027boa noite\u0027].includes(normalized);\n}\n\nfunction isStartCommand() {\n  return normalized === \u0027/start\u0027 || normalized.startsWith(\u0027/start \u0027);\n}\n\nfunction looksTrainingRelated() {\n  return hasAny([\n    \u0027treino\u0027, \u0027treinar\u0027, \u0027exercicio\u0027, \u0027exercicios\u0027, \u0027serie\u0027, \u0027series\u0027, \u0027repeticao\u0027, \u0027repeticoes\u0027,\n    \u0027academia\u0027, \u0027musculo\u0027, \u0027musculos\u0027, \u0027hipertrofia\u0027, \u0027forca\u0027, \u0027cardio\u0027, \u0027aquecimento\u0027, \u0027alongamento\u0027,\n    \u0027supino\u0027, \u0027agachamento\u0027, \u0027leg press\u0027, \u0027remada\u0027, \u0027puxada\u0027, \u0027desenvolvimento\u0027, \u0027rosca\u0027, \u0027triceps\u0027,\n    \u0027prancha\u0027, \u0027esteira\u0027, \u0027bicicleta\u0027, \u0027panturrilha\u0027, \u0027posterior\u0027, \u0027peito\u0027, \u0027costas\u0027, \u0027perna\u0027, \u0027ombro\u0027\n  ]);\n}\n\nfunction looksExecutionQuestion() {\n  return hasAny([\n    \u0027como fazer\u0027, \u0027forma de fazer\u0027, \u0027melhor forma\u0027, \u0027execucao\u0027, \u0027executar\u0027, \u0027postura\u0027, \u0027tecnica\u0027,\n    \u0027movimento\u0027, \u0027amplitude\u0027, \u0027pegada\u0027, \u0027posicao\u0027, \u0027puxar\u0027, \u0027empurrar\u0027, \u0027subir\u0027, \u0027descer\u0027\n  ]);\n}\n\nfunction looksWorkoutStructureRequest() {\n  return hasAny([\u0027monta\u0027, \u0027montar\u0027, \u0027organizar\u0027, \u0027dividir\u0027, \u0027estrutura\u0027, \u0027rotina\u0027, \u0027ficha\u0027, \u0027planejar\u0027]);\n}\n\nfunction looksTrainingVariableQuestion() {\n  return hasAny([\u0027quantas series\u0027, \u0027quantas repeticoes\u0027, \u0027repeticoes\u0027, \u0027volume\u0027, \u0027frequencia\u0027, \u0027intensidade\u0027, \u0027cadencia\u0027]);\n}\n\nfunction hasRiskSignal() {\n  return hasAny([\u0027dor\u0027, \u0027doendo\u0027, \u0027machuquei\u0027, \u0027machucado\u0027, \u0027lesao\u0027, \u0027fisgada\u0027, \u0027formigamento\u0027, \u0027tontura\u0027, \u0027piorando\u0027]);\n}\n\nfunction hasStopRiskSignal() {\n  return hasAny([\u0027dor forte\u0027, \u0027dor aguda\u0027, \u0027fisgada\u0027, \u0027formigamento\u0027, \u0027dor no peito\u0027, \u0027tontura\u0027, \u0027piorando\u0027]);\n}\n\nasync function classifyWithLlm() {\n  const allowedIntents = [\n    \u0027short_workout\u0027, \u0027rest_question\u0027, \u0027failure_question\u0027, \u0027substitution\u0027, \u0027exercise_execution\u0027,\n    \u0027workout_request\u0027, \u0027training_variable_question\u0027, \u0027concept_explanation\u0027, \u0027personalized_workout_request\u0027,\n    \u0027exact_load\u0027, \u0027out_of_scope\u0027, \u0027fallback\u0027\n  ];\n  const allowedMacroIntents = [\n    \u0027training_help\u0027, \u0027exercise_change\u0027, \u0027exercise_execution\u0027, \u0027workout_structure\u0027, \u0027training_variable\u0027,\n    \u0027meta_or_feedback\u0027, \u0027out_of_scope\u0027, \u0027unknown\u0027\n  ];\n  const system = `Classifique uma mensagem de usuario para o Gym Buddy. Responda somente JSON valido, sem markdown. Nao gere resposta ao usuario. Intents permitidas: ${allowedIntents.join(\u0027, \u0027)}. Macro-intents permitidas: ${allowedMacroIntents.join(\u0027, \u0027)}. Use risk_level normal salvo se a mensagem falar explicitamente de dor, lesao, fisgada, formigamento, tontura ou piora. Se a mensagem pedir kg exato, use exact_load. Se a mensagem for sobre tecnica, postura, pegada, amplitude ou como fazer um exercicio, use exercise_execution. Se for fora de treino, use out_of_scope.`;\n  const user = `Mensagem: ${text}\\n\\nRetorne JSON com: intent, macro_intent, confidence (high|medium|low), risk_level (normal|caution|stop), needs_clarification (boolean).`;\n\n  try {\n    const response = await fetch(\u0027http://ollama:11434/api/chat\u0027, {\n      method: \u0027POST\u0027,\n      headers: { \u0027Content-Type\u0027: \u0027application/json\u0027 },\n      body: JSON.stringify({\n        model: \u0027llama3.2:3b\u0027,\n        stream: false,\n        format: \u0027json\u0027,\n        options: { temperature: 0, num_predict: 160 },\n        messages: [\n          { role: \u0027system\u0027, content: system },\n          { role: \u0027user\u0027, content: user }\n        ]\n      })\n    });\n    const raw = await response.text();\n    const parsed = raw ? JSON.parse(raw) : {};\n    const content = parsed.message?.content ?? parsed.response ?? \u0027\u0027;\n    const result = typeof content === \u0027string\u0027 ? JSON.parse(content) : content;\n    const intent = allowedIntents.includes(result.intent) ? result.intent : \u0027fallback\u0027;\n    const macro = allowedMacroIntents.includes(result.macro_intent) ? result.macro_intent : \u0027unknown\u0027;\n    const confidence = [\u0027high\u0027, \u0027medium\u0027, \u0027low\u0027].includes(result.confidence) ? result.confidence : \u0027low\u0027;\n    const risk = [\u0027normal\u0027, \u0027caution\u0027, \u0027stop\u0027].includes(result.risk_level) ? result.risk_level : \u0027normal\u0027;\n    return {\n      status: response.ok ? \u0027success\u0027 : \u0027error\u0027,\n      intent,\n      macro_intent: macro,\n      confidence,\n      risk_level: risk,\n      needs_clarification: Boolean(result.needs_clarification),\n      error: response.ok ? null : (parsed.error || response.statusText || \u0027classifier_failed\u0027)\n    };\n  } catch (error) {\n    return {\n      status: \u0027error\u0027,\n      intent: \u0027fallback\u0027,\n      macro_intent: \u0027unknown\u0027,\n      confidence: \u0027low\u0027,\n      risk_level: \u0027normal\u0027,\n      needs_clarification: true,\n      error: error.message || \u0027classifier_failed\u0027\n    };\n  }\n}\n\nconst cards = {\n  rest: `CARD: Rest Intervals\\n- Short rests can work for lighter or isolation exercises.\\n- Longer rests help preserve performance in heavier compound exercises.\\n- Practical range: 1-2 min for lighter work, 2-3 min for heavier compound work.\\n- If technique or performance drops sharply, rest longer.\\n- Do not prescribe an exact interval as individualized programming.`,\n  failure: `CARD: Failure Training\\n- Failure means another good repetition is unlikely.\\n- RIR means repetitions in reserve; RIR 2 means about 2 good reps left.\\n- Most sets do not need to be taken to failure.\\n- Many useful sets can end with 1-3 RIR.\\n- Failure can increase fatigue and technique breakdown.`,\n  shortWorkout: `CARD: Short Workouts\\n- Keep it simple and general, not deeply personalized.\\n- Include a short warm-up with esteira, bicicleta or mobilidade leve. Do not use prancha as warm-up.\\n- Prefer 4-6 exercises using broad patterns: lower body, push, pull, hinge or hamstring, core.\\n- Use common gym exercises only: leg press, agachamento, supino, flexao, puxada, remada, desenvolvimento, mesa flexora, cadeira extensora, terra romeno, prancha, bicicleta ou esteira.\\n- Do not invent exercise names. If unsure, choose leg press, supino, remada, mesa flexora and prancha.\\n- For strength exercises, use sets and reps. Use seconds only for prancha, cardio or warm-up.\\n- Preferred 30 min structure: 5 min warm-up; leg press 3x8-12; supino or flexao 3x8-12; remada 3x8-12; mesa flexora 2x10-12; prancha 2x30-45s; rest 60-90s.\\n- Do not promise results or prescribe exact loads.\\n- Tell the user to stop or adapt if pain appears.`,\n  substitution: `CARD: Exercise Substitutions\\n- A substitution can be reasonable when goal, equipment and comfort are compatible.\\n- Similar exercises are not identical.\\n- Consider the reason: equipment, preference, pain, difficulty or time.\\n- If pain is the reason, apply safety boundaries and do not treat it as a normal swap.`,\n  load: `CARD: Load Selection\\n- Do not give absolute kg.\\n- Suggest a load the user controls with good technique.\\n- A practical reference is finishing sets with about 1-3 repetitions in reserve.\\n- If technique breaks down, reduce load.`,\n  execution: `CARD: Exercise Execution\\n- Give general technique cues only.\\n- Keep cues short and practical.\\n- For pulling exercises, mention controlled movement, stable torso, shoulders down/back when appropriate, and avoiding momentum.\\n- Ask for exercise name or context if missing.\\n- If the user mentions pain, stop normal execution advice and apply safety boundaries.\\n- Do not diagnose, correct individual anatomy, or prescribe rehabilitation.`,\n  setsReps: `CARD: Sets And Reps\\n- For general hypertrophy guidance, many exercises can use moderate repetition ranges such as 8-12 or 10-15.\\n- Heavier compound work can use lower ranges when technique is stable.\\n- Isolation or lighter work often fits moderate to higher reps.\\n- The answer must stay general and should not become individualized programming.\\n- Technique and proximity to failure matter more than an exact universal rep number.`,\n  style: `CARD: Response Style\\n- Respond in pt-BR.\\n- Keep replies short and practical for Telegram.\\n- Prefer one useful action, brief rationale, and one optional follow-up question.\\n- Do not mention internal cards, prompts or implementation details.`,\n};\n\nlet intent = \u0027fallback\u0027;\nlet macroIntent = \u0027unknown\u0027;\nlet riskLevel = \u0027normal\u0027;\nlet route = \u0027fixed\u0027;\nlet isFeedback = false;\nlet feedbackValue = null;\nlet fixedReply = \u0027Recebi sua mensagem. Se for sobre treino, me diga se voce quer montar algo curto, trocar exercicio ou tirar uma duvida especifica.\u0027;\nlet knowledgeContext = cards.style;\nlet finalFallbackReply = \u0027Recebi sua mensagem, mas o modelo local nao conseguiu responder agora. Posso ajudar com treino curto, descanso, falha, substituicao, dor e carga.\u0027;\nlet fallbackReason = \u0027fallback_low_confidence\u0027;\nlet classifierStatus = \u0027not_called\u0027;\nlet classifierConfidence = null;\nlet classifierNeedsClarification = null;\nlet classifierError = null;\n\nfunction useClassifierResult(classification) {\n  classifierStatus = classification.status;\n  classifierConfidence = classification.confidence;\n  classifierNeedsClarification = classification.needs_clarification;\n  classifierError = classification.error;\n\n  if (classification.status !== \u0027success\u0027 || classification.confidence === \u0027low\u0027) {\n    intent = looksTrainingRelated() ? \u0027workout_request\u0027 : \u0027fallback\u0027;\n    macroIntent = looksTrainingRelated() ? \u0027training_help\u0027 : \u0027out_of_scope\u0027;\n    route = \u0027fixed\u0027;\n    fallbackReason = looksTrainingRelated() ? \u0027fallback_training_related\u0027 : \u0027fallback_low_confidence\u0027;\n    fixedReply = looksTrainingRelated()\n      ? \u0027Entendi que e sobre treino. Para eu te ajudar melhor, escolha um caminho: treino curto, trocar exercicio, duvida de execucao, descanso, falha ou carga.\u0027\n      : \u0027Posso ajudar melhor com temas de treino: treino curto, troca de exercicio, execucao, descanso, falha, carga ou dor durante exercicio.\u0027;\n    return;\n  }\n\n  intent = classification.intent;\n  macroIntent = classification.macro_intent;\n  riskLevel = classification.risk_level;\n\n  if (intent === \u0027exact_load\u0027) {\n    route = \u0027fixed\u0027;\n    fallbackReason = \u0027mandatory_load_boundary\u0027;\n    fixedReply = \u0027Nao vou indicar kg exato sem avaliar tecnica e contexto. Use uma carga que voce controle bem e termine a serie com cerca de 1 a 3 repeticoes em reserva. Se a tecnica quebrar, reduza.\u0027;\n  } else if (intent === \u0027personalized_workout_request\u0027) {\n    route = \u0027fixed\u0027;\n    fallbackReason = \u0027mandatory_personalization_boundary\u0027;\n    fixedReply = \u0027Posso ajudar com uma estrutura geral, mas nao vou fingir personalizacao profunda sem avaliacao. Para ajustar melhor, me diga so 2 coisas: objetivo principal e equipamentos disponiveis.\u0027;\n  } else if (intent === \u0027exercise_execution\u0027) {\n    route = \u0027local_llm\u0027;\n    knowledgeContext = `${cards.execution}\\n\\n${cards.style}`;\n    finalFallbackReply = \u0027Consigo ajudar com orientacao geral de execucao. Mantenha o movimento controlado, sem impulso, e me diga o exercicio se quiser uma dica mais especifica.\u0027;\n    fixedReply = null;\n    fallbackReason = \u0027classified_execution_local_llm_fallback\u0027;\n  } else if (intent === \u0027training_variable_question\u0027) {\n    route = \u0027local_llm\u0027;\n    knowledgeContext = `${cards.setsReps}\\n\\n${cards.failure}\\n\\n${cards.style}`;\n    finalFallbackReply = \u0027Como guia geral, muitos exercicios funcionam bem em faixas como 8-12 ou 10-15 repeticoes, mantendo tecnica boa e algumas repeticoes em reserva. O ideal depende do exercicio e do objetivo da sessao.\u0027;\n    fixedReply = null;\n    fallbackReason = \u0027classified_training_variable_local_llm_fallback\u0027;\n  } else if (intent === \u0027concept_explanation\u0027) {\n    route = \u0027local_llm\u0027;\n    knowledgeContext = `${cards.setsReps}\\n\\n${cards.failure}\\n\\n${cards.rest}\\n\\n${cards.style}`;\n    finalFallbackReply = \u0027Posso explicar de forma geral. Me diga se sua duvida e sobre series, repeticoes, descanso, carga, falha ou execucao.\u0027;\n    fixedReply = null;\n    fallbackReason = \u0027classified_concept_local_llm_fallback\u0027;\n  } else if (intent === \u0027workout_request\u0027) {\n    route = \u0027fixed\u0027;\n    fallbackReason = \u0027needs_session_context\u0027;\n    fixedReply = \u0027Consigo montar uma ideia geral, sem fingir personalizacao profunda. Me diga so 2 coisas: quanto tempo voce tem hoje e quais equipamentos estao disponiveis.\u0027;\n  } else if (intent === \u0027substitution\u0027) {\n    route = \u0027local_llm\u0027;\n    knowledgeContext = `${cards.substitution}\\n\\n${cards.style}`;\n    finalFallbackReply = \u0027Pode fazer sentido trocar, mas exercicios parecidos nao sao identicos. Me diga qual exercicio voce quer trocar e o motivo: equipamento, preferencia, dificuldade, tempo ou dor.\u0027;\n    fixedReply = null;\n    fallbackReason = \u0027classified_substitution_local_llm_fallback\u0027;\n  } else if (intent === \u0027short_workout\u0027) {\n    route = \u0027local_llm\u0027;\n    knowledgeContext = `${cards.shortWorkout}\\n\\n${cards.load}\\n\\n${cards.style}`;\n    finalFallbackReply = \u0027Ideia geral de treino curto:\\n\\n1. Aquecimento: 5 min leve.\\n2. Leg press: 3x8-12.\\n3. Supino ou flexao: 3x8-12.\\n4. Remada: 3x8-12.\\n5. Mesa flexora: 2x10-12.\\n6. Prancha: 2x30-45s.\\n\\nUse carga controlavel e pare se sentir dor fora do normal.\u0027;\n    fixedReply = null;\n    fallbackReason = \u0027classified_short_workout_local_llm_fallback\u0027;\n  } else if (intent === \u0027rest_question\u0027) {\n    route = \u0027local_llm\u0027;\n    knowledgeContext = `${cards.rest}\\n\\n${cards.style}`;\n    finalFallbackReply = \u0027Como regra geral: 1-2 min funciona bem para exercicios leves ou isoladores; 2-3 min costuma ajudar em exercicios pesados como agachamento, supino e remada. Se a tecnica cair muito, descanse mais.\u0027;\n    fixedReply = null;\n    fallbackReason = \u0027classified_rest_local_llm_fallback\u0027;\n  } else if (intent === \u0027failure_question\u0027) {\n    route = \u0027local_llm\u0027;\n    knowledgeContext = `${cards.failure}\\n\\n${cards.style}`;\n    finalFallbackReply = \u0027Nao precisa ir ate a falha em toda serie. Uma boa referencia e terminar muitas series com 1 a 3 repeticoes em reserva. Falha pode ser util em alguns momentos, mas aumenta fadiga e risco de perder tecnica.\u0027;\n    fixedReply = null;\n    fallbackReason = \u0027classified_failure_local_llm_fallback\u0027;\n  } else if (intent === \u0027out_of_scope\u0027) {\n    route = \u0027fixed\u0027;\n    fallbackReason = \u0027fallback_out_of_scope\u0027;\n    fixedReply = \u0027Posso ajudar melhor com temas de treino: treino curto, troca de exercicio, execucao, descanso, falha, carga ou dor durante exercicio.\u0027;\n  } else {\n    route = \u0027fixed\u0027;\n    fallbackReason = \u0027fallback_training_related\u0027;\n    fixedReply = \u0027Entendi que e sobre treino. Para eu te ajudar melhor, escolha um caminho: treino curto, trocar exercicio, duvida de execucao, descanso, falha ou carga.\u0027;\n  }\n}\n\nconst positiveFeedback = new Set([\u0027sim\u0027, \u0027ajudou\u0027, \u0027ok\u0027, \u0027boa\u0027, \u0027positivo\u0027]);\nconst negativeFeedback = new Set([\u0027nao\u0027, \u0027nao ajudou\u0027, \u0027ruim\u0027, \u0027negativo\u0027]);\n\nif (!text) {\n  intent = \u0027non_text\u0027;\n  macroIntent = \u0027unsupported_format\u0027;\n  route = \u0027fixed\u0027;\n  fallbackReason = \u0027fallback_unsupported_format\u0027;\n  fixedReply = \u0027Por enquanto eu so consigo responder mensagens de texto. Me diga sua duvida ou o treino que voce quer ajustar.\u0027;\n} else if (positiveFeedback.has(normalized)) {\n  intent = \u0027feedback\u0027;\n  macroIntent = \u0027meta_or_feedback\u0027;\n  route = \u0027fixed\u0027;\n  isFeedback = true;\n  feedbackValue = \u0027positive\u0027;\n  fallbackReason = \u0027rule_based_feedback\u0027;\n  fixedReply = \u0027Valeu pelo feedback. Vou manter respostas curtas e praticas por aqui.\u0027;\n} else if (negativeFeedback.has(normalized)) {\n  intent = \u0027feedback\u0027;\n  macroIntent = \u0027meta_or_feedback\u0027;\n  route = \u0027fixed\u0027;\n  isFeedback = true;\n  feedbackValue = \u0027negative\u0027;\n  fallbackReason = \u0027rule_based_feedback\u0027;\n  fixedReply = \u0027Obrigado pelo feedback. Me diga em uma frase o que faltou ou o que voce queria ajustar.\u0027;\n} else if (hasRiskSignal()) {\n  intent = \u0027discomfort\u0027;\n  macroIntent = \u0027risk_signal\u0027;\n  route = \u0027fixed\u0027;\n  riskLevel = hasStopRiskSignal() ? \u0027stop\u0027 : \u0027caution\u0027;\n  fallbackReason = \u0027mandatory_safety_response\u0027;\n  fixedReply = riskLevel === \u0027stop\u0027\n    ? \u0027Para agora e evite repetir o movimento que causou isso. Nao consigo diagnosticar pelo chat. Se a dor foi forte, aguda, esta piorando, teve formigamento, tontura ou dor no peito, procure avaliacao profissional ou atendimento urgente.\u0027\n    : \u0027Se apareceu dor ou desconforto, reduza ou pare o movimento por enquanto. Nao treine atravessando dor. Se persistir ou piorar, procure avaliacao profissional. Posso sugerir uma alternativa geral mais conservadora se voce me disser o exercicio.\u0027;\n} else if (hasAny([\u0027quantos kg\u0027, \u0027quanto peso\u0027, \u0027carga exata\u0027, \u0027qual carga\u0027, \u0027kg eu coloco\u0027])) {\n  intent = \u0027exact_load\u0027;\n  macroIntent = \u0027training_variable\u0027;\n  route = \u0027fixed\u0027;\n  fallbackReason = \u0027mandatory_load_boundary\u0027;\n  fixedReply = \u0027Nao vou indicar kg exato sem avaliar tecnica e contexto. Use uma carga que voce controle bem e termine a serie com cerca de 1 a 3 repeticoes em reserva. Se a tecnica quebrar, reduza.\u0027;\n} else if (hasAny([\u0027lembra\u0027, \u0027ontem\u0027, \u0027treino anterior\u0027, \u0027ultima vez\u0027, \u0027semana passada\u0027])) {\n  intent = \u0027memory_request\u0027;\n  macroIntent = \u0027meta_or_feedback\u0027;\n  route = \u0027fixed\u0027;\n  fallbackReason = \u0027mandatory_no_memory_boundary\u0027;\n  fixedReply = \u0027Neste MVP eu nao lembro sessoes anteriores. Me reenvie o treino ou diga o objetivo de hoje que eu te ajudo a partir da mensagem atual.\u0027;\n} else if (isStartCommand() || isGreetingOnly() || hasAny([\u0027comecar\u0027, \u0027inicio\u0027])) {\n  intent = \u0027onboarding\u0027;\n  macroIntent = \u0027meta_or_feedback\u0027;\n  route = \u0027fixed\u0027;\n  fallbackReason = \u0027rule_based_onboarding\u0027;\n  fixedReply = \u0027Oi. Eu sou o Gym Buddy. Posso ajudar com duvidas rapidas de treino, descanso, falha, substituicoes e ideias gerais de treino curto. Nao precisa usar /start: me diga direto o que voce precisa agora.\u0027;\n} else if (hasAny([\u0027treino rapido\u0027, \u0027treino de 30\u0027, \u002730 min\u0027, \u002730 minutos\u0027, \u0027meia hora\u0027, \u002720 min\u0027, \u002720 minutos\u0027, \u0027pouco tempo\u0027])) {\n  intent = \u0027short_workout\u0027;\n  macroIntent = \u0027workout_structure\u0027;\n  knowledgeContext = `${cards.shortWorkout}\\n\\n${cards.load}\\n\\n${cards.style}`;\n  finalFallbackReply = \u0027Ideia geral de treino curto:\\n\\n1. Aquecimento: 5 min leve.\\n2. Leg press: 3x8-12.\\n3. Supino ou flexao: 3x8-12.\\n4. Remada: 3x8-12.\\n5. Mesa flexora: 2x10-12.\\n6. Prancha: 2x30-45s.\\n\\nUse carga controlavel e pare se sentir dor fora do normal.\u0027;\n  route = \u0027local_llm\u0027;\n  fixedReply = null;\n  fallbackReason = \u0027primary_llm_disabled_local_llm_fallback\u0027;\n} else if (hasAny([\u0027descanso\u0027, \u0027descansar\u0027, \u0027intervalo\u0027])) {\n  intent = \u0027rest_question\u0027;\n  macroIntent = \u0027training_variable\u0027;\n  knowledgeContext = `${cards.rest}\\n\\n${cards.style}`;\n  finalFallbackReply = \u0027Como regra geral: 1-2 min funciona bem para exercicios leves ou isoladores; 2-3 min costuma ajudar em exercicios pesados como agachamento, supino e remada. Se a tecnica cair muito, descanse mais.\u0027;\n  route = \u0027local_llm\u0027;\n  fixedReply = null;\n  fallbackReason = \u0027primary_llm_disabled_local_llm_fallback\u0027;\n} else if (hasAny([\u0027falha\u0027, \u0027ate a falha\u0027, \u0027rir\u0027, \u0027repeticoes em reserva\u0027])) {\n  intent = \u0027failure_question\u0027;\n  macroIntent = \u0027training_variable\u0027;\n  knowledgeContext = `${cards.failure}\\n\\n${cards.style}`;\n  finalFallbackReply = \u0027Nao precisa ir ate a falha em toda serie. Uma boa referencia e terminar muitas series com 1 a 3 repeticoes em reserva. Falha pode ser util em alguns momentos, mas aumenta fadiga e risco de perder tecnica.\u0027;\n  route = \u0027local_llm\u0027;\n  fixedReply = null;\n  fallbackReason = \u0027primary_llm_disabled_local_llm_fallback\u0027;\n} else if (hasAny([\u0027trocar\u0027, \u0027troca\u0027, \u0027mudar\u0027, \u0027muda\u0027, \u0027substituir\u0027, \u0027substituicao\u0027, \u0027no lugar de\u0027, \u0027alternativa\u0027, \u0027adaptar\u0027])) {\n  intent = \u0027substitution\u0027;\n  macroIntent = \u0027exercise_change\u0027;\n  knowledgeContext = `${cards.substitution}\\n\\n${cards.style}`;\n  finalFallbackReply = \u0027Pode fazer sentido trocar, mas exercicios parecidos nao sao identicos. Me diga qual exercicio voce quer trocar e o motivo: equipamento, preferencia, dificuldade, tempo ou dor.\u0027;\n  route = \u0027local_llm\u0027;\n  fixedReply = null;\n  fallbackReason = \u0027primary_llm_disabled_local_llm_fallback\u0027;\n} else if (hasAny([\u0027personalizado\u0027, \u0027personalizada\u0027, \u0027pra mim\u0027, \u0027para mim\u0027])) {\n  intent = \u0027personalized_workout_request\u0027;\n  macroIntent = \u0027workout_structure\u0027;\n  route = \u0027fixed\u0027;\n  fallbackReason = \u0027mandatory_personalization_boundary\u0027;\n  fixedReply = \u0027Posso ajudar com uma estrutura geral, mas nao vou fingir personalizacao profunda sem avaliacao. Para ajustar melhor, me diga so 2 coisas: objetivo principal e equipamentos disponiveis.\u0027;\n} else if (looksExecutionQuestion()) {\n  intent = \u0027exercise_execution\u0027;\n  macroIntent = \u0027exercise_execution\u0027;\n  route = \u0027local_llm\u0027;\n  knowledgeContext = `${cards.execution}\\n\\n${cards.style}`;\n  finalFallbackReply = \u0027Consigo ajudar com orientacao geral de execucao. Mantenha o movimento controlado, sem impulso, e me diga o exercicio se quiser uma dica mais especifica.\u0027;\n  fixedReply = null;\n  fallbackReason = \u0027rule_execution_local_llm_fallback\u0027;\n} else if (looksWorkoutStructureRequest()) {\n  intent = \u0027workout_request\u0027;\n  macroIntent = \u0027workout_structure\u0027;\n  route = \u0027fixed\u0027;\n  fallbackReason = \u0027needs_session_context\u0027;\n  fixedReply = \u0027Consigo montar uma ideia geral, sem fingir personalizacao profunda. Me diga so 2 coisas: quanto tempo voce tem hoje e quais equipamentos estao disponiveis.\u0027;\n} else if (looksTrainingVariableQuestion()) {\n  intent = \u0027training_variable_question\u0027;\n  macroIntent = \u0027training_variable\u0027;\n  route = \u0027local_llm\u0027;\n  knowledgeContext = `${cards.setsReps}\\n\\n${cards.failure}\\n\\n${cards.style}`;\n  finalFallbackReply = \u0027Como guia geral, muitos exercicios funcionam bem em faixas como 8-12 ou 10-15 repeticoes, mantendo tecnica boa e algumas repeticoes em reserva. O ideal depende do exercicio e do objetivo da sessao.\u0027;\n  fixedReply = null;\n  fallbackReason = \u0027rule_training_variable_local_llm_fallback\u0027;\n} else {\n  const classification = await classifyWithLlm();\n  useClassifierResult(classification);\n}\n\nconst requiresLlm = route === \u0027local_llm\u0027;\nconst systemPrompt = `Voce e o Gym Buddy, um assistente pratico de apoio a treino para Telegram. Responda em pt-BR. Use apenas orientacao geral, curta e segura. Nao diagnostique, nao trate lesao, nao prescreva reabilitacao, nao indique kg exato, nao prometa resultado e nao finja memoria ou personalizacao profunda. Casos de dor ou risco ja foram bloqueados antes de chegar aqui. Use somente nomes comuns de exercicios de academia; nao invente nomes. Nao mencione bastidores, cards ou implementacao.`;\nconst userPrompt = `Intent: ${intent}\\nMacro intent: ${macroIntent}\\nRisk level: ${riskLevel}\\nContexto curado:\\n${knowledgeContext}\\n\\nMensagem do usuario:\\n${text}\\n\\nGere uma resposta curta e pratica para Telegram.`;\n\nreturn [{\n  json: {\n    channel: \u0027telegram\u0027,\n    user_id: from.id ?? null,\n    chat_id: chat.id ?? null,\n    username: from.username ?? null,\n    first_name: from.first_name ?? null,\n    message_id: message.message_id ?? null,\n    message_text: text,\n    message_type: text ? \u0027text\u0027 : \u0027non_text\u0027,\n    received_at: message.date ? new Date(message.date * 1000).toISOString() : new Date().toISOString(),\n    intent,\n    macro_intent: macroIntent,\n    risk_level: riskLevel,\n    route,\n    is_feedback: isFeedback,\n    feedback_value: feedbackValue,\n    requires_llm: requiresLlm,\n    fixed_reply: fixedReply,\n    final_fallback_reply: finalFallbackReply,\n    fallback_reason: fallbackReason,\n    knowledge_context: knowledgeContext,\n    primary_llm_status: \u0027disabled_budget\u0027,\n    classifier_status: classifierStatus,\n    classifier_confidence: classifierConfidence,\n    classifier_needs_clarification: classifierNeedsClarification,\n    classifier_error: classifierError,\n    system_prompt: systemPrompt,\n    user_prompt: userPrompt\n  }\n}];"
+                                     },
+                      "id":  "2afefc3b-2551-4511-80a8-cd67857e0a57",
+                      "name":  "Route And Build Context",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       500,
+                                       300
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "boolean":  [
+                                                                            {
+                                                                                "value1":  "={{ $json.requires_llm }}",
+                                                                                "operation":  "equal",
+                                                                                "value2":  true
+                                                                            }
+                                                                        ]
+                                                        }
+                                     },
+                      "id":  "0b40efcf-72ad-4049-b622-d11e7377d83d",
+                      "name":  "Needs Local LLM",
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  1,
+                      "position":  [
+                                       760,
+                                       300
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const baseUrl = \u0027http://ollama:11434\u0027;\nconst model = \u0027llama3.2:3b\u0027;\n\ntry {\n  const response = await fetch(`${baseUrl}/api/chat`, {\n    method: \u0027POST\u0027,\n    headers: { \u0027Content-Type\u0027: \u0027application/json\u0027 },\n    body: JSON.stringify({\n      model,\n      stream: false,\n      options: {\n        temperature: 0.25,\n        num_predict: 260\n      },\n      messages: [\n        { role: \u0027system\u0027, content: $json.system_prompt },\n        { role: \u0027user\u0027, content: $json.user_prompt }\n      ]\n    })\n  });\n\n  const raw = await response.text();\n  let parsed = {};\n  try { parsed = raw ? JSON.parse(raw) : {}; } catch (error) { parsed = { raw }; }\n\n  if (!response.ok) {\n    return [{ json: { ...$json, error: { provider: \u0027ollama\u0027, code: response.status, message: parsed.error || response.statusText || \u0027Ollama request failed\u0027, raw: parsed } } }];\n  }\n\n  return [{ json: { ...$json, llm_provider: \u0027ollama\u0027, llm_model: model, text: parsed.message?.content ?? parsed.response ?? \u0027\u0027, raw_ollama_response: parsed } }];\n} catch (error) {\n  return [{ json: { ...$json, error: { provider: \u0027ollama\u0027, code: error.name || \u0027OLLAMA_REQUEST_ERROR\u0027, message: error.message || \u0027Ollama request failed\u0027 } } }];\n}\n"
+                                     },
+                      "id":  "d45dcd5a-0516-46d7-9688-93dec971ac11",
+                      "name":  "Call Local LLM",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       1020,
+                                       220
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const source = $(\u0027Route And Build Context\u0027).first().json;\nconst errorMessage = $json.error?.message ?? null;\nconst errorCode = $json.error?.code ?? null;\nconst provider = $json.error?.provider ?? $json.llm_provider ?? \u0027ollama\u0027;\nconst hasLlmError = Boolean($json.error || errorCode);\nconst modelReply = String($json.text ?? \u0027\u0027).trim();\nconst replyText = hasLlmError ? source.final_fallback_reply : (modelReply || source.final_fallback_reply);\n\nreturn [{\n  json: {\n    ...source,\n    reply_text: replyText,\n    handled_at: new Date().toISOString(),\n    llm_provider: provider,\n    llm_model: $json.llm_model ?? null,\n    llm_status: hasLlmError ? \u0027error\u0027 : \u0027success\u0027,\n    llm_error_code: errorCode,\n    llm_error_message: errorMessage,\n    used_final_fallback: hasLlmError || !modelReply\n  }\n}];\n"
+                                     },
+                      "id":  "02f92c45-f875-499a-af1a-8c4d5f8f2b9b",
+                      "name":  "Normalize Local LLM Reply",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       1280,
+                                       220
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "return [{ json: { ...$json, reply_text: $json.fixed_reply, handled_at: new Date().toISOString(), llm_provider: null, llm_status: \u0027not_called\u0027, used_final_fallback: false } }];\n"
+                                     },
+                      "id":  "3fd6c5e8-dd5a-4101-bf22-03c2ffdcf1b8",
+                      "name":  "Build Fixed Reply",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       1020,
+                                       420
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const log = {\n  event: \u0027gym_buddy_mvp_message\u0027,\n  channel: $json.channel,\n  user_id: $json.user_id,\n  chat_id: $json.chat_id,\n  username: $json.username,\n  message_id: $json.message_id,\n  message_type: $json.message_type,\n  message_text: $json.message_text,\n  intent: $json.intent,\n  macro_intent: $json.macro_intent,\n  risk_level: $json.risk_level,\n  route: $json.route,\n  requires_llm: $json.requires_llm,\n  classifier_status: $json.classifier_status,\n  classifier_confidence: $json.classifier_confidence,\n  classifier_needs_clarification: $json.classifier_needs_clarification,\n  classifier_error: $json.classifier_error,\n  primary_llm_status: $json.primary_llm_status,\n  llm_provider: $json.llm_provider,\n  llm_model: $json.llm_model ?? null,\n  llm_status: $json.llm_status,\n  llm_error_code: $json.llm_error_code ?? null,\n  llm_error_message: $json.llm_error_message ?? null,\n  fallback_reason: $json.fallback_reason,\n  used_final_fallback: $json.used_final_fallback,\n  reply_text: $json.reply_text,\n  received_at: $json.received_at,\n  handled_at: $json.handled_at\n};\nconsole.log(\u0027GYM_BUDDY_TECH_LOG \u0027 + JSON.stringify(log));\nreturn [{ json: { ...$json, technical_log: log } }];"
+                                     },
+                      "id":  "6bbd6d93-3e82-47f7-adff-d180f8bbb70b",
+                      "name":  "Log Reply",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       1540,
+                                       300
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "chatId":  "={{ $json.chat_id }}",
+                                         "text":  "={{ $json.reply_text }}",
+                                         "additionalFields":  {
+                                                                  "appendAttribution":  false
+                                                              }
+                                     },
+                      "id":  "c16c5c51-49c8-48ec-8e95-a2beab299af5",
+                      "name":  "Send Reply",
+                      "type":  "n8n-nodes-base.telegram",
+                      "typeVersion":  1.2,
+                      "position":  [
+                                       1800,
+                                       300
+                                   ],
+                      "webhookId":  "gym-buddy-mvp-send-reply",
+                      "credentials":  {
+                                          "telegramApi":  {
+                                                              "id":  "REPLACE_WITH_N8N_TELEGRAM_CREDENTIAL_ID",
+                                                              "name":  "Telegram credential"
+                                                          }
+                                      }
+                  }
+              ],
+    "pinData":  {
+
+                },
+    "connections":  {
+                        "Telegram Trigger":  {
+                                                 "main":  [
+                                                              [
+                                                                  {
+                                                                      "node":  "Route And Build Context",
+                                                                      "type":  "main",
+                                                                      "index":  0
+                                                                  }
+                                                              ]
+                                                          ]
+                                             },
+                        "Route And Build Context":  {
+                                                        "main":  [
+                                                                     [
+                                                                         {
+                                                                             "node":  "Needs Local LLM",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         }
+                                                                     ]
+                                                                 ]
+                                                    },
+                        "Needs Local LLM":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "Call Local LLM",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ],
+                                                             [
+                                                                 {
+                                                                     "node":  "Build Fixed Reply",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Call Local LLM":  {
+                                               "main":  [
+                                                            [
+                                                                {
+                                                                    "node":  "Normalize Local LLM Reply",
+                                                                    "type":  "main",
+                                                                    "index":  0
+                                                                }
+                                                            ]
+                                                        ]
+                                           },
+                        "Normalize Local LLM Reply":  {
+                                                          "main":  [
+                                                                       [
+                                                                           {
+                                                                               "node":  "Log Reply",
+                                                                               "type":  "main",
+                                                                               "index":  0
+                                                                           }
+                                                                       ]
+                                                                   ]
+                                                      },
+                        "Build Fixed Reply":  {
+                                                  "main":  [
+                                                               [
+                                                                   {
+                                                                       "node":  "Log Reply",
+                                                                       "type":  "main",
+                                                                       "index":  0
+                                                                   }
+                                                               ]
+                                                           ]
+                                              },
+                        "Log Reply":  {
+                                          "main":  [
+                                                       [
+                                                           {
+                                                               "node":  "Send Reply",
+                                                               "type":  "main",
+                                                               "index":  0
+                                                           }
+                                                       ]
+                                                   ]
+                                      }
+                    },
+    "active":  false,
+    "settings":  {
+                     "executionOrder":  "v1"
+                 },
+    "versionId":  "0c51689c-99a7-4062-82d6-3f6cd0d93d0d",
+    "meta":  {
+                 "templateCredsSetupCompleted":  true
+             },
+    "id":  "030-gym-buddy-mvp-telegram",
+    "tags":  [
+
+             ]
 }

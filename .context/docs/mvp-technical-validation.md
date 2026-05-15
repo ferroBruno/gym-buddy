@@ -32,6 +32,18 @@ Compose:
 docker compose config --quiet
 ```
 
+Regressoes conhecidas do workflow MVP:
+
+```powershell
+.\.context\scripts\Test-Workflow030Regression.ps1
+```
+
+Quando o n8n local estiver rodando, validar tambem a versao ativa que o Telegram executa:
+
+```powershell
+.\.context\scripts\Test-Workflow030Regression.ps1 -CheckActiveN8n
+```
+
 ## Validacao principal pela UI do n8n
 
 Os dados de execucao ficam salvos no Postgres do n8n e podem ser revisados pela interface.
@@ -41,7 +53,8 @@ Os dados de execucao ficam salvos no Postgres do n8n e podem ser revisados pela 
 3. Filtrar pelo workflow `030 - Gym Buddy MVP Telegram`.
 4. Abrir a execucao mais recente.
 5. Conferir os nodes:
-   - `Route And Build Context`: campos do Telegram, intent, risco e rota.
+  - `Route And Build Context`: campos do Telegram, intent, risco e rota.
+  - `Route And Build Context`: `macro_intent`, `classifier_status` e fallback categorizado quando aplicavel.
    - `Call Local LLM`: chamada ao Ollama quando aplicavel.
    - `Normalize Local LLM Reply`: decisao entre LLM e fallback.
    - `Log Reply`: objeto tecnico estruturado.
@@ -149,9 +162,9 @@ docker compose up -d --force-recreate n8n
 ```
 
 3. Confirmar workflow ativo nos logs.
-4. Enviar `/start` no Telegram.
+4. Enviar uma primeira mensagem livre no Telegram, por exemplo `quero um treino de 30 min`.
 5. Consultar `execution_entity`.
 6. Se falhar, consultar `execution_data`.
 7. Confirmar se existe `GYM_BUDDY_TECH_LOG`.
-8. Enviar `Gostaria de um treino rapido de 30 min`.
+8. Enviar `/start` apenas como teste opcional de onboarding.
 9. Verificar se houve resposta ou falha controlada.

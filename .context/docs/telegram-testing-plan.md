@@ -34,6 +34,8 @@ Para testar usando seu telefone, voce conversa com o bot pelo aplicativo Telegra
 4. Testar pelo app Telegram no seu telefone.
 5. Exportar o workflow para `.context/workflows/010-telegram-echo-smoke.json`.
 
+O comando `/start` deve ser tratado como onboarding opcional. Para o MVP principal, qualquer primeira mensagem de texto deve iniciar o fluxo de interpretacao do conteudo.
+
 ## Workflow de smoke test
 
 O workflow versionado para o primeiro teste Telegram e:

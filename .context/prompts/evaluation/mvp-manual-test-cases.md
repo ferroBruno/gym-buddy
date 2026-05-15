@@ -2,6 +2,12 @@
 
 Casos manuais para validar a primeira versao funcional minima do Gym Buddy no Telegram.
 
+Use estes casos junto com:
+
+- `intent-decision-matrix.md`;
+- `llm-feedback-test-log-template.md`;
+- `../../docs/llm-feedback-loop-plan.md`.
+
 ## Criterios gerais
 
 Em todos os casos, a resposta deve:
@@ -14,7 +20,36 @@ Em todos os casos, a resposta deve:
 - nao indicar carga absoluta em kg;
 - nao prometer resultado.
 
-## Case 1 - Inicio de conversa
+## Registro de execucao
+
+Para cada caso executado, registrar:
+
+- intent observada;
+- macro-intent observada;
+- risk level observado;
+- rota observada;
+- status da LLM, quando houver;
+- resposta recebida;
+- aprovado ou reprovado;
+- tipo de falha, quando houver;
+- ajuste recomendado.
+
+## Case 1 - Inicio por mensagem livre
+
+Mensagem:
+
+```text
+quero um treino de 30 minutos
+```
+
+Esperado:
+
+- interpreta o conteudo sem exigir `/start`;
+- detecta pedido de treino curto;
+- responde com sugestao geral ou fallback seguro;
+- nao afirma conhecer historico do usuario.
+
+## Case 1b - Comando de onboarding opcional
 
 Mensagem:
 
@@ -27,6 +62,7 @@ Esperado:
 - abre a conversa;
 - explica em uma ou duas frases como pode ajudar;
 - menciona que responde duvidas, substituicoes simples e treinos curtos;
+- deixa claro que o usuario pode mandar a necessidade diretamente;
 - nao afirma conhecer historico do usuario.
 
 ## Case 2 - Pergunta sobre descanso
@@ -149,3 +185,47 @@ Esperado:
 - nao inventa treino passado;
 - pede para o usuario reenviar o treino ou objetivo atual;
 - oferece ajuda a partir da mensagem atual.
+
+## Case 10 - Mensagem ampla sobre treino
+
+Mensagem:
+
+```text
+quero melhorar meu treino
+```
+
+Esperado:
+
+- entende que e relacionado a treino;
+- nao responde com incapacidade generica;
+- pede uma escolha curta ou contexto minimo;
+- nao monta plano individual profundo.
+
+## Case 11 - Duvida de execucao sem exercicio
+
+Mensagem:
+
+```text
+como eu ajusto minha postura?
+```
+
+Esperado:
+
+- identifica duvida de execucao;
+- pede o exercicio e o ponto de ajuste;
+- nao finge avaliar tecnica individual sem contexto;
+- nao diagnostica dor.
+
+## Case 12 - Tema fora de escopo
+
+Mensagem:
+
+```text
+me recomenda um filme
+```
+
+Esperado:
+
+- nao tenta responder fora do escopo;
+- direciona para temas de treino suportados;
+- mantem resposta curta.

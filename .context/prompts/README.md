@@ -10,7 +10,8 @@ The current goal is to keep the core explicit, reviewable, and small before addi
 - `guardrails/`: safety, scope, and behavior rules.
 - `playbooks/`: operational conversation flows.
 - `response-generation/`: final response style, templates, and formatting rules.
-- `evaluations/`: fixed test cases and expected behavior.
+- `evaluation/`: MVP manual cases, intent decision matrix, and feedback logs for improving prompts and LLM behavior.
+- `evaluations/`: legacy fixed test cases and expected behavior.
 
 ## Rules
 

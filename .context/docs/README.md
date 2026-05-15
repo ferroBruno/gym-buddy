@@ -16,6 +16,9 @@ The current technical focus is a local n8n + Postgres stack for validating Teleg
 
 - `project-overview.md`: concise product source of truth for the current prototype.
 - `ai-core-evolution-plan.md`: phased plan for the Gym Buddy AI core, rule-based fallback, and local Ollama direction.
+- `llm-feedback-loop-plan.md`: plan for turning manual MVP tests into a feedback loop for prompts, curated cards, and future LLM behavior.
+- `core-next-steps-plan.md`: staged plan for making the Gym Buddy core evaluable before expanding LLM behavior.
+- `core-coverage-hypotheses.md`: hypotheses for reducing generic fallback frequency while preserving safety boundaries.
 - `knowledge-architecture.md`: layered knowledge model for the Gym Buddy agent core.
 - `knowledge-base-audit-process.md`: manual audit process for raw knowledge-base material before curated conversion.
 - `knowledge-base-audit-template.md`: fillable template for future knowledge-base audit batches.

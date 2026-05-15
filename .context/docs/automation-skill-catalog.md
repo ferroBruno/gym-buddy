@@ -84,6 +84,7 @@ Nao muda arquitetura ou escopo funcional sem documento de decisao ou aprovacao e
 | `../scripts/Run-LocalSmokeTests.ps1` | `smoke-test-runner` |
 | `../scripts/Test-DocLinks.ps1` | `doc-maintainer` |
 | `../scripts/Test-RuntimeEnv.ps1` | `ops-stabilizer` |
+| `../scripts/Test-Workflow030Regression.ps1` | `workflow-author` |
 
 ## Pontos de decisao
 
